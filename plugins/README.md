@@ -6,9 +6,10 @@ Plugins for memery!
 Licensing
 ---------
 
-All code is licensed under the following three-clause BSD license:
+All plugins are licensed under the following three-clause BSD license
+and copyrighted to their respecive authors:
 
-    Copyright (c) 2012, kqr, nycz
+    Copyright (c) 2012, plugin authors
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -18,7 +19,7 @@ All code is licensed under the following three-clause BSD license:
         * Redistributions in binary form must reproduce the above copyright
           notice, this list of conditions and the following disclaimer in the
           documentation and/or other materials provided with the distribution.
-        * The names of the contributors must not be used to endorse or promote
+        * The names of the authors must not be used to endorse or promote
           products derived from this software without specific prior written
           permission.
 

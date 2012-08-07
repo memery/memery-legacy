@@ -2,6 +2,8 @@
 import common
 import re
 
+# author: ~kqr and slaeshjag
+
 def help():
   raise NotImplementedError
 
