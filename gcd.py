@@ -8,7 +8,7 @@ def run(nick, args):
 
 def gcd(args):
   try:
-    [a, b] = [int(n) for n in args.split()]
+    a, b = [int(n) for n in args.split()]
   except ValueError:
     return "Specify two integers, space separated."
 
