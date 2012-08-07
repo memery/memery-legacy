@@ -1,0 +1,31 @@
+# Pythonkommentarer och tomma rader ignoreras
+# rawmsg = :nick!nickidentifier PRIVMSG #channel :message
+
+# Variabler som kan användas: myname, sender, channel, message
+# De skrivs med {} runt då dom byts ut med string formatting.
+# Lösa {} skrivs som dubbla {{}}!
+# {arg} är speciell: i cmd byts den ut mot (.+?) och i answer byts den
+# ut mot vad arg representerade i cmd.
+# cmd och answer skiljs med [whitespace]->[whitespace].
+# Iom det försvinner trailing whitespace i cmd (men inte leading?)
+
+# cmd är regexes!!!!
+
+# Börja svaret med #py: och det exekveras som python kod istället.
+# Observera att variablerna då skrivs utan {} runt!
+
+# === KOMMANDON === #
+\.tidigt	 		-> <calle> {sender} går alltid och lägger sig tidigt
+\.tidigt {arg} 		-> <calle> {arg} går alltid och lägger sig tidigt
+\.tidigt/me {arg} 	-> * {arg} går alltid och lägger sig tidigt
+\.nej 				-> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
+\.allitd {arg} 		-> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
+ALLITD 				-> ALLITD
+echo {arg} 			-> {arg}
+\.rullar {arg} 		-> {arg} rullar in som det ska[\n]det går bra nu
+{myname}! 			-> wuh?
+\.wannab			-> luktar wanna b amerikan
+\.choose {arg}		-> #py:random.choice(arg.split('|')).strip()
+\.title				-> nej
+\.ping				-> pong
+\.tyda {arg}		-> #py: sender + ': http://tyda.se/search/' + quote(arg)
