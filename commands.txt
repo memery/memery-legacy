@@ -1,36 +1,60 @@
-# Pythonkommentarer och tomma rader ignoreras
-# rawmsg = :nick!nickidentifier PRIVMSG #channel :message
+# === DOKUMENTATION === #
 
-# Variabler som kan användas: myname, sender, channel, message
-# De skrivs med {} runt då dom byts ut med string formatting.
-# Lösa {} skrivs som dubbla {{}}!
-# {arg} är speciell: i cmd byts den ut mot (.+?) och i answer byts den
-# ut mot vad arg representerade i cmd.
-# cmd och answer skiljs med [whitespace]->[whitespace].
-# Iom det försvinner trailing whitespace i cmd (men inte leading?)
+# Tomma rader och rader som börjar med # IGNORERAS.
+# Felaktiga rader ignoreras också (detta bör inte utnyttjas, punks)
 
-# cmd är regexes!!!!
+# Rader som INTE är ett KOMMANDO (se nedan) tolkas som IMPORT.
+#   * Raderna ska bestå av modulnamn separerade med ett , och ev. whitespace
+#   * Moduler som inte finns kommer inte att importeras (eller krascha botten)
+# OBS !! urllib.parse, urllib.error mfl ska inte importeras separat, utan
+#     bara importeras som urllib. Troligtvis gäller detta för andra liknande.
 
-# Börja svaret med #py: och det exekveras som python kod istället.
-# Observera att variablerna då skrivs utan {} runt!
-# quote() är urllib.parse.quote() och bra för URL:er (no shit.)
+# Rader som innehåller ' -> ' tolkas som KOMMANDON.
+#   (mängden whitespace runt -> är irrelevant)
+# Båda sidor parsas först med .format():
+#   * {myname} = bottens namn
+#   * {sender} = avsändarens nick, inte ident/hostname
+#   * {channel} {message} är ganska självklara
+#   * behövs {} måste dom skrivas dubbelt: {{}}
+# Höger sida:
+#   * tolkas som REGEX
+#   * {arg} byts ut mot (.+?)
+# Vänster sida:
+#   * bara string formatting
+#   * {arg} står för vad {arg} innehöll på höger sida
+#   * {qarg} innebär quote(arg), bra för urler
+#   > kan exekvera riktig pythonkod om texten börjar med #py:
+#       * allt efter '#py:' körs i eval()
+#       * alla moduler som importerats i DEN HÄR FILEN kan användas
+#       * argument ({arg} etc) skrivs utan {} runt om
 
-# === KOMMANDON === #
+
+# === IMPORTS === #
+calendar, datetime, random, urllib
+
+
+# === MEMES === #
 \.tidigt           -> <calle> {sender} går alltid och lägger sig tidigt
 \.tidigt {arg}     -> <calle> {arg} går alltid och lägger sig tidigt
 \.tidigt/me {arg}  -> * {arg} går alltid och lägger sig tidigt
 \.nej              -> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
 \.allitd {arg}     -> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
 ALLITD             -> ALLITD
-echo {arg}         -> {arg}
 \.rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
-{myname}!          -> wuh?
 \.wannab           -> luktar wanna b amerikan
-\.choose {arg}     -> #py:random.choice(arg.split('|')).strip()
+\.lök              -> <Goebbels> Nu ska jag handla LÖK.
+\.lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
+LÖ+K               -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
+
+# === SMÅPLOCK === #
+echo {arg}         -> {arg}
+{myname}!          -> wuh?
 \.title            -> nej
 \.ping             -> pong
-\.tyda {arg}       -> #py: '{0}: http://tyda.se/search/{1}'.format(sender, quote(arg))
-\.hitta {arg}      -> #py: '{0}: www.hitta.se/LargeMap.aspx?var={1}'.format(sender, quote(arg))
+
+# === KOMMANDON === # 
+\.choose {arg}     -> #py: random.choice(arg.split('|')).strip()
+\.tyda {arg}       -> {sender}: http://tyda.se/search/{qarg}
+\.hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
 \.vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
 \.jdn              -> #py: '{0}: Current julian day: {1}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
-
