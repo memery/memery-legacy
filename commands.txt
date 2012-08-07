@@ -13,19 +13,23 @@
 
 # Börja svaret med #py: och det exekveras som python kod istället.
 # Observera att variablerna då skrivs utan {} runt!
+# quote() är urllib.parse.quote() och bra för URL:er (no shit.)
 
 # === KOMMANDON === #
-\.tidigt	 		-> <calle> {sender} går alltid och lägger sig tidigt
-\.tidigt {arg} 		-> <calle> {arg} går alltid och lägger sig tidigt
-\.tidigt/me {arg} 	-> * {arg} går alltid och lägger sig tidigt
-\.nej 				-> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
-\.allitd {arg} 		-> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
-ALLITD 				-> ALLITD
-echo {arg} 			-> {arg}
-\.rullar {arg} 		-> {arg} rullar in som det ska[\n]det går bra nu
-{myname}! 			-> wuh?
-\.wannab			-> luktar wanna b amerikan
-\.choose {arg}		-> #py:random.choice(arg.split('|')).strip()
-\.title				-> nej
-\.ping				-> pong
-\.tyda {arg}		-> #py: sender + ': http://tyda.se/search/' + quote(arg)
+\.tidigt           -> <calle> {sender} går alltid och lägger sig tidigt
+\.tidigt {arg}     -> <calle> {arg} går alltid och lägger sig tidigt
+\.tidigt/me {arg}  -> * {arg} går alltid och lägger sig tidigt
+\.nej              -> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
+\.allitd {arg}     -> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
+ALLITD             -> ALLITD
+echo {arg}         -> {arg}
+\.rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
+{myname}!          -> wuh?
+\.wannab           -> luktar wanna b amerikan
+\.choose {arg}     -> #py:random.choice(arg.split('|')).strip()
+\.title            -> nej
+\.ping             -> pong
+\.tyda {arg}       -> #py: '{0}: http://tyda.se/search/{1}'.format(sender, quote(arg))
+\.hitta {arg}      -> #py: '{0}: www.hitta.se/LargeMap.aspx?var={1}'.format(sender, quote(arg))
+\.vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
+
