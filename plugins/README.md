@@ -3,6 +3,40 @@ memery-plugins
 
 Plugins for memery!
 
+
+Structure
+---------
+
+Plugins must consist of at least two functions: help() and run().
+
+* help() has no parameters. Help must return a dictionary with the following
+    elements: authors, years, version, description and argument.
+
+    * authors must be a list of strings, each string being the name of
+        one author of the plugin.
+    * years must be a list of strings, each string being a copyright year.
+    * version must be a single string with an indication of the version
+        of a plugin.
+    * description must be a single string which contains a short
+        description of what the purpose of the plugin is.
+    * argument must be a single string which outlines the expected format
+        of the argument to the plugin.
+
+    Example dictionary:
+
+        {'authors':     ['John H. Doe'], ['Nick White'],
+         'years':       ['2009', '2010', '2011'],
+         'version':     '3.4',
+         'description': 'Executes a Python expression.',
+         'argument':    '<valid python expression>'}
+        
+* run() has two parameters. The first parameter is the nick of the user who
+    executed the command. The second parameter is the argument to the command.
+    Both arguments are strings and may be dealt with as the author pleases.
+    The function must return a string, the first line of which will be output
+    in the channel the command was requested.
+
+
 Licensing
 ---------
 

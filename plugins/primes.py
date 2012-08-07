@@ -2,7 +2,11 @@
 # author: ~kqr
 
 def help():
-  raise NotImplementedError
+  return {'authors':     ['kqr'],
+          'years':       ['2012'],
+          'version':     '0.8',
+          'description': 'Calculates prime factors.',
+          'argument':    '<natural number n, where 2 < n < 100000>'} 
 
 def run(nick, args):
   return "{0}: {1}".format(nick, primes(args))
@@ -11,7 +15,7 @@ def run(nick, args):
 def primes(args):
   try:
     number = int(args)
-    if number < 2 or number > 99999:
+    if number <= 2 or number > 99999:
       raise ValueError
 
   except ValueError:

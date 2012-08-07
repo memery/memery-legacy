@@ -2,7 +2,11 @@
 # author: ~kqr
 
 def help():
-  raise NotImplementedError
+  return {'authors':     ['kqr'],
+          'years':       ['2012'],
+          'version':     '1.0',
+          'description': 'Calculates the greatest common divisor of two natural numbers.',
+          'argument':    '<natural number> <natural number>'}
 
 def run(nick, args):
   return "{0}: {1}".format(nick, gcd(args))

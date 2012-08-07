@@ -5,7 +5,11 @@ import re
 # author: ~kqr and slaeshjag
 
 def help():
-  raise NotImplementedError
+  return {'authors':     ['kqr', 'slaeshjag'],
+          'years':       ['2012'],
+          'version':     '1.0',
+          'description': 'Interface to Goole calc API.',
+          'argument':    '<expression>'}
 
 def run(nick, args):
   return "{0}: {1}".format(nick, calc(args))
