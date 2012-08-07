@@ -24,7 +24,7 @@ Plugins must consist of at least two functions: help() and run().
 
     Example dictionary:
 
-        {'authors':     ['John H. Doe'], ['Nick White'],
+        {'authors':     ['John H. Doe', 'Nick White'],
          'years':       ['2009', '2010', '2011'],
          'version':     '3.4',
          'description': 'Executes a Python expression.',
