@@ -1,4 +1,5 @@
 from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 def url_request(url):
     req = Request(url)
