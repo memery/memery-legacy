@@ -57,4 +57,4 @@ echo {arg}         -> {arg}
 \.tyda {arg}       -> {sender}: http://tyda.se/search/{qarg}
 \.hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
 \.vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
-\.jdn              -> #py: '{0}: Current julian day: {1}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
+\.jdn              -> #py: '{0}: Current julian day: {1:.5f}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
