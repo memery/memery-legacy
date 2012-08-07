@@ -32,4 +32,5 @@ echo {arg}         -> {arg}
 \.tyda {arg}       -> #py: '{0}: http://tyda.se/search/{1}'.format(sender, quote(arg))
 \.hitta {arg}      -> #py: '{0}: www.hitta.se/LargeMap.aspx?var={1}'.format(sender, quote(arg))
 \.vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
+\.jdn              -> #py: '{0}: Current julian day: {1}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
 
