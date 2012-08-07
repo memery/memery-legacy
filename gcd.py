@@ -1,7 +1,10 @@
 
+
+def help():
+  raise NotImplementedError
+
 def run(nick, args):
   return "{0}: {1}".format(nick, gcd(args))
-
 
 def gcd(args):
   try:
