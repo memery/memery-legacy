@@ -188,10 +188,6 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
     plugins = get_plugins()
 
-    # .blacklist
-    if msg.startswith('.blacklist ') and is_admin:
-        return make_privmsgs(o_blacklist_commands(sendernick, msg), channel)
-
     # .giveop
     elif msg.startswith('.giveop ') and is_admin:
         return giveop(msg, channel)
