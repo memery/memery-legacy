@@ -19,8 +19,8 @@ starting with #.
 ### config
 
 This file is read only on startup and should contain memery's nick, channel(s),
-server, port and command prefix (currently unused.)
-Example:
+server, port and command prefix (currently unused.) The file is written in 
+JSON. Example:
 
     {
         "nick": "memery",
@@ -55,18 +55,6 @@ This file is not cached and changes you make to it will be apparent
 immediately.
 
 
-### o-blacklist
-
-This file should not be edited manually! In fact, if you're lucky you'll never
-need it at all! It contains all crappy .o commands that timeout or return
-HTTP errors of some sort. Memery will not run any of them.
-
-Each command is on their own line.
-
-This file is not cached and changes you make to it will be apparent
-immediately.
-
-
 
 Licensing
 ---------
@@ -75,7 +63,7 @@ All python code (except plugins, see separate copyright notice in the plugin
 directory) is licensed under the following three-clause BSD license and 
 copyrighted to their respective authors:
 
-    Copyright (c) 2012, nycz
+    Copyright (c) 2012, nycz, kqr
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
