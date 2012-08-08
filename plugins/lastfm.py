@@ -7,7 +7,7 @@ def help():
   return {'authors':     ['kqr'],
           'years':       ['2012'],
           'version':     '1.0',
-          'description': 'Get the last track from someones last.fm. Requires a last.fm API key! (Place key in lastfm-api-key in the same directory as the plugin.)',
+          'description': 'Get the last track from someones last.fm. Requires a last.fm API key! (Place key in lastfm-api-key in the working directory of the bot.)',
           'argument':    '<last.fm user name>'}
 
 def run(nick, args):
@@ -19,7 +19,7 @@ def lastfm(args):
     if not (len(key) == 32 and re.search(r'^[0-9a-f]+$', key)):
       raise IOError
   except IOError:
-    raise IOError('No key for last.fm API found. Create file lastfm-api-key with only the key in it.')
+    raise IOError('No key for last.fm API found. Create file lastfm-api-key with only the key in it in the working directory of the bot.')
 
   request = common.url_request("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&api_key={1}&user={0}".format(common.quote(args), key))
   with common.urlopen(request) as s:
