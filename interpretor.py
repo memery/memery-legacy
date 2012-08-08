@@ -203,7 +203,7 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
     # elif msg.startswith('.help '):
 
     # plugins:
-    elif msg.split()[0][1:] in plugins:
+    elif msg.startswith('.') and msg.split()[0][1:] in plugins:
         return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
 
     # Title
