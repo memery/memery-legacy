@@ -5,15 +5,9 @@ from urllib.error import HTTPError, URLError
 from html.parser import HTMLParser
 import common
 
-o_blacklist_fname = 'o_blacklist'
+o_blacklist_fname = 'o-blacklist'
 
 # Helper/convenience functions
-
-def url_request(url):
-    req = Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 memery')
-    return req
-
 def make_privmsgs(texts, channel):
     if type(texts) != type([]):
         texts = [texts]
@@ -84,7 +78,7 @@ def o_blacklist_commands(sendernick, msg):
 def o_blacklist_this(command):
     blacklist = common.read_file(o_blacklist_fname)
     if command not in blacklist:
-        with open(fname, 'a') as f:
+        with open(o_blacklist_fname, 'a') as f:
             f.write(command + '\n')
 
 def get_o_commands():
@@ -120,7 +114,7 @@ def run_o_command(sendernick, msg, commands):
                 'jag har bättre saker för mej',
                 'nej', 'funkar inte'])
 
-    req = url_request(commands[cmd].format(nick=sendernick, args=args))
+    req = common.url_request(commands[cmd].format(nick=sendernick, args=args))
     
     try:
         with urlopen(req) as s:
@@ -182,7 +176,7 @@ def giveop(msg, channel):
     return None
 
 def get_title(url):
-    req = url_request(url)
+    req = common.url_request(url)
     try:
         with urlopen(req) as s:
             page = s.read()
