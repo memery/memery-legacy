@@ -22,9 +22,12 @@ server and port.
 Example:
 
     nick:memery
-    channel:#channel
+    channels:#channel
     server:serv.errr.net
     port:1234
+
+Note the 's' in channelS! It should be there even if only one channels it to be
+joined.
 
 
 ### adminlist
