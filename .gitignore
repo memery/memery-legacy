@@ -31,3 +31,7 @@ userblacklist
 adminlist
 config
 o-blacklist
+
+# plugin specific
+lastfm-api-key
+
