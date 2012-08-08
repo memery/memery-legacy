@@ -41,7 +41,7 @@ Licensing
 ---------
 
 All plugins are licensed under the following three-clause BSD license
-and copyrighted to their respecive authors:
+and copyrighted to their respective authors:
 
     Copyright (c) plugin years, plugin authors
     All rights reserved.
