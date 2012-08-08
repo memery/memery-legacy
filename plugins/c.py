@@ -8,7 +8,7 @@ def help():
   return {'authors':     ['kqr', 'slaeshjag'],
           'years':       ['2012'],
           'version':     '1.0',
-          'description': 'Interface to Goole calc API.',
+          'description': 'Interface to Google calc API.',
           'argument':    '<expression>'}
 
 def run(nick, args):
