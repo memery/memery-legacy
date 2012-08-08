@@ -102,10 +102,9 @@ def run_irc(network, port, channels, nick):
 if __name__ == '__main__':
     # Let the whole damn thing crash if the config is crap!
     d = {}
-    with open('config', encoding='utf-8') as f:
-        lines = [l.split(':', 1) for l in f.read().splitlines()
-                 if l and not l.startswith('#')]
-    for l in lines:
-        if len(l) == 2:
-            d[l[0]] = l[1]
-    run_irc(d['server'], int(d['port']), d['channels'].split(','), d['nick'])
+    try:
+      d = common.read_json('config')
+      run_irc(d['server'], d['port'], d['channels'], d['nick'])
+    except Exception as e:
+      print('Invalid config: {}'.format(e))
+

@@ -13,18 +13,22 @@ No config files are in the repo, they have to be created locally. If they do
 not exist when memery needs them, empty ones will be created.
 (This does not apply to config, memery will crash without it)
 
-All of them will ignore empty lines and lines starting with #.
+All of them except the main configuration will ignore empty lines and lines
+starting with #.
 
 ### config
 
 This file is read only on startup and should contain memery's nick, channel(s),
-server and port.
+server, port and command prefix (currently unused.)
 Example:
 
-    nick:memery
-    channels:#channel
-    server:serv.errr.net
-    port:1234
+    {
+        "nick": "memery",
+        "channels": ["#channel"],
+        "server": "serv.errr.net",
+        "port": 1234,
+        "command_prefix": "!"
+    }
 
 Note the 's' in channelS! It should be there even if only one channels it to be
 joined.

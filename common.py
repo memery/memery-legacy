@@ -1,4 +1,5 @@
 import os.path, re
+import json
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
@@ -18,6 +19,17 @@ def read_file(fname):
             lines = [l for l in f.read().splitlines()
                      if l and not l.startswith('#')]
         return lines
+
+def read_json(fname):
+  if not os.path.isfile(fname):
+    with open(fname, mode='w', encoding='utf-8') as f:
+      print('NEWFILE!!!!')
+      f.write('')
+    return {}
+  else:
+    with open(fname, encoding='utf-8') as f:
+      content = json.loads(f.read())
+    return content
 
 def _is_in_list(sendernick, senderident, fname):
     list_ = read_file(fname)
