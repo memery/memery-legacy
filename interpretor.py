@@ -174,7 +174,7 @@ def random_talk(sendernick, msg):
 
 # Entry point
 
-def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
+def main_parse(msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
     The returned values from this function should be valid
