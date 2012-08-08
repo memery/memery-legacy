@@ -189,7 +189,7 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
     plugins = get_plugins()
 
     # .giveop
-    elif msg.startswith('.giveop ') and is_admin:
+    if msg.startswith('.giveop ') and is_admin:
         return giveop(msg, channel)
 
     # memery:
