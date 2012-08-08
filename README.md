@@ -20,6 +20,7 @@ All of them will ignore empty lines and lines starting with #.
 This file is read only on startup and should contain memery's nick, channel(s),
 server and port.
 Example:
+
     nick:memery
     channel:#channel
     server:serv.errr.net
@@ -60,14 +61,13 @@ immediately.
 
 
 
-
 Licensing
 ---------
 
-All plugins are licensed under the following three-clause BSD license
+All core files are licensed under the following three-clause BSD license
 and copyrighted to their respective authors:
 
-    Copyright (c) plugin years, plugin authors
+    Copyright (c) 2012, nycz
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
