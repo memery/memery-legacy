@@ -1,6 +1,4 @@
 
-# author: ~kqr
-
 def help():
   return {'authors':     ['kqr'],
           'years':       ['2012'],

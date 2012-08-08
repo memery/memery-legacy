@@ -2,8 +2,6 @@
 import common
 import re
 
-# author: ~kqr and slaeshjag
-
 def help():
   return {'authors':     ['kqr', 'slaeshjag'],
           'years':       ['2012'],
