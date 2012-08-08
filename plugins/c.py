@@ -31,6 +31,7 @@ def calc(args):
 
 def sanitise(str):
   str = re.sub(r'\xa0', r' ', str)
+  str = re.sub(r'\x3d', r'=', str)
   str = re.sub(r'\\x3csup\\x3e(\d+)\\x3c/sup\\x3e\\x26#8260;\\x3csub\\x3e(\d+)\\x3c/sub\\x3e', r' and \1/\2', str)
   str = re.sub(r'\\x26#215;', r'×', str)
   str = re.sub(r'\\x3csup\\x3e', r'^(', str)
