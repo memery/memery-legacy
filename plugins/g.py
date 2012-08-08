@@ -17,7 +17,15 @@ def search(args):
   with common.urlopen(request) as s:
     content = s.read().decode('utf-8', 'replace')
 
-  result = re.search(r'<div class="jd"><a class="p" href="(.+?)"', content).group(1)
+  try:
+    match = re.search(r'<div class="jd"><a class="p" href="(.+?)".*?>(.+?)</a>', content)
+    link = match.group(1)
+    title = re.sub(r'<.+?>', '', match.group(2))
+    if link[:4] != "http":
+      link = re.search(r'q=(http.+?)&amp;', link).group(1)
+    result = "{0} -- {1}".format(title, link)
+  except AttributeError:
+    result = "No hits."
 
   return result
 
