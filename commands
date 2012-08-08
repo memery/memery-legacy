@@ -16,10 +16,10 @@
 #   * {sender} = avsändarens nick, inte ident/hostname
 #   * {channel} {message} är ganska självklara
 #   * behövs {} måste dom skrivas dubbelt: {{}}
-# Höger sida:
+# Vänster sida:
 #   * tolkas som REGEX
 #   * {arg} byts ut mot (.+?)
-# Vänster sida:
+# Höger sida:
 #   * bara string formatting
 #   * {arg} står för vad {arg} innehöll på höger sida
 #   * {qarg} innebär quote(arg), bra för urler
@@ -42,6 +42,8 @@ calendar, datetime, random, urllib
 ALLITD             -> ALLITD
 \.rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
 \.wannab           -> luktar wanna b amerikan
+\.murk( hyad)?     -> ☻
+\.lose             -> The Game.
 \.lök              -> <Goebbels> Nu ska jag handla LÖK.
 \.lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
 LÖ+K               -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
