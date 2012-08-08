@@ -14,20 +14,6 @@ def make_privmsgs(texts, channel):
     return ['PRIVMSG {} :{}'.format(channel, t) 
             for t in texts if t]
 
-# Not used
-
-def expand_aliases(msg):
-    lines = common.read_file('aliases.txt')
-    for line in lines:
-        try:
-            alias, replc = re.split('\s+->\s+', line)
-        except ValueError:
-            # TODO: some good error handling here
-            continue
-        # Add a trailing space to prevent .choose -> .o choose because of .c
-        if msg.startswith(alias + ' '):
-            return replc + ' ' + msg[len(alias)+1:]
-    return msg
 
 
 # .o commands
