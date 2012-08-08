@@ -5,6 +5,7 @@ from urllib.error import HTTPError, URLError
 from html.parser import HTMLParser
 import common
 
+o_blacklist_fname = 'o_blacklist'
 
 # Helper/convenience functions
 
@@ -42,8 +43,7 @@ def o_blacklist_commands(sendernick, msg):
         _, text = msg.split(None, 1)
     except ValueError:
         return None
-    blfname = 'o-blacklist'
-    blacklist = common.read_file(blfname)
+    blacklist = common.read_file(o_blacklist_fname)
 
     try:
         cmd, args = text.split(None, 1)
@@ -62,7 +62,7 @@ def o_blacklist_commands(sendernick, msg):
             return 'inget att ta bort'
         elif args in blacklist:
             del blacklist[blacklist.index(args)]
-            with open(blfname, mode='w', encoding='utf-8') as f:
+            with open(o_blacklist_fname, mode='w', encoding='utf-8') as f:
                 f.write('\n'.join(blacklist) + '\n')
             return '{} borttaget från svartlistan'.format(args)
         else:
@@ -72,7 +72,7 @@ def o_blacklist_commands(sendernick, msg):
         if args == None:
             return 'inget att lägga till'
         elif args not in blacklist:
-            with open(blfname, mode='a', encoding='utf-8') as f:
+            with open(o_blacklist_fname, mode='a', encoding='utf-8') as f:
                 f.write(args + '\n')
             return '{} tillagt i svartlistan'.format(args)
         else:
@@ -82,8 +82,7 @@ def o_blacklist_commands(sendernick, msg):
         return 'möjliga blacklistkommandon: list, remove, add'
 
 def o_blacklist_this(command):
-    fname = 'o-blacklist'
-    blacklist = common.read_file(fname)
+    blacklist = common.read_file(o_blacklist_fname)
     if command not in blacklist:
         with open(fname, 'a') as f:
             f.write(command + '\n')
@@ -115,7 +114,7 @@ def run_o_command(sendernick, msg, commands):
     if cmd not in commands:
         return None
 
-    blacklist = common.read_file('o-blacklist.txt')
+    blacklist = common.read_file(o_blacklist_fname)
     if cmd in blacklist:
         return random.choice(['svartlistat kommando', 
                 'jag har bättre saker för mej',
@@ -214,8 +213,8 @@ def nudge_response(sendernick, msg):
     if random.randint(0,6) > 0:
         return None
     l = ['{}: MEN DU ÄR JU DUM I HUVUDET',
-         '{0}: det kanske är du som gör fel?',
-         '{0}: aa fast nej']
+         '{}: det kanske är du som gör fel?',
+         '{}: aa fast nej']
     return random.choice(l).format(sendernick)
 
 def get_command_imports(lines):

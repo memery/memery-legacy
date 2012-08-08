@@ -41,7 +41,7 @@ immediately.
 ### userblacklist
 
 Identical to the adminlist file, except the users here will not be able to
-interact with memery in any way whatsoever (unless they for some odd reason)
+interact with memery in any way whatsoever (unless they for some odd reason
 would be on the adminlist – that overrides this file).
 
 This file is not cached and changes you make to it will be apparent
@@ -64,8 +64,9 @@ immediately.
 Licensing
 ---------
 
-All core files are licensed under the following three-clause BSD license
-and copyrighted to their respective authors:
+All python code (except plugins, see separate copyright notice in the plugin 
+directory) is licensed under the following three-clause BSD license and 
+copyrighted to their respective authors:
 
     Copyright (c) 2012, nycz
     All rights reserved.
