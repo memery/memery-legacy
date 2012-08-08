@@ -5,114 +5,12 @@ from urllib.error import HTTPError, URLError
 from html.parser import HTMLParser
 import common
 
-o_blacklist_fname = 'o-blacklist'
-
 # Helper/convenience functions
 def make_privmsgs(texts, channel):
     if type(texts) != type([]):
         texts = [texts]
     return ['PRIVMSG {} :{}'.format(channel, t) 
             for t in texts if t]
-
-
-
-# .o commands
-
-def o_blacklist_commands(sendernick, msg):
-    try:
-        _, text = msg.split(None, 1)
-    except ValueError:
-        return None
-    blacklist = common.read_file(o_blacklist_fname)
-
-    try:
-        cmd, args = text.split(None, 1)
-    except ValueError:
-        cmd = text
-        args = None
-
-    if cmd == 'list':
-        if len(', '.join(blacklist)) > 450:
-            return '{} svartlistade .o-kommandon'.format(len(blacklist))
-        else:
-            return 'svartlista: {}'.format(', '.join(blacklist))
-
-    elif cmd == 'remove':
-        if args == None:
-            return 'inget att ta bort'
-        elif args in blacklist:
-            del blacklist[blacklist.index(args)]
-            with open(o_blacklist_fname, mode='w', encoding='utf-8') as f:
-                f.write('\n'.join(blacklist) + '\n')
-            return '{} borttaget från svartlistan'.format(args)
-        else:
-            return '{} finns inte i svartlistan'.format(args)
-
-    elif cmd == 'add':
-        if args == None:
-            return 'inget att lägga till'
-        elif args not in blacklist:
-            with open(o_blacklist_fname, mode='a', encoding='utf-8') as f:
-                f.write(args + '\n')
-            return '{} tillagt i svartlistan'.format(args)
-        else:
-            return '{} finns redan i svartlistan'.format(args)
-
-    else:
-        return 'möjliga blacklistkommandon: list, remove, add'
-
-def o_blacklist_this(command):
-    blacklist = common.read_file(o_blacklist_fname)
-    if command not in blacklist:
-        with open(o_blacklist_fname, 'a') as f:
-            f.write(command + '\n')
-
-def get_o_commands():
-    with urlopen('http://h4xxel.org/failboat/services.html') as s:
-        content = s.read().decode('utf-8', 'replace')
-
-    commands = {}
-    for line in re.findall('(?<=<li>).+?(?=</li>)', content):
-        cmd, url = line.split(' ', 1)
-        commands[cmd] = HTMLParser().unescape(url.replace('${','{'))
-    
-    # Woo specialfall för mr3d cant be bothered
-    commands['haxell'] = 'http://adun.se/haskell.pl?{args}'
-    commands['gcalc'] = 'http://w.rdw.se:81/gcalc.php?nonewline&args={args}'
-    commands['404test'] = 'http://nothinghere.lol'
-    return commands
-
-def run_o_command(sendernick, msg, commands):
-    # [.o] [cmd] [args] tex .o wik fisk
-    msgchunks = msg.split(None, 2)
-    cmd = msgchunks[1]
-    if len(msgchunks) > 2:
-        args = quote_plus(msgchunks[2])
-    else:
-        args = ''
-    
-    if cmd not in commands:
-        return None
-
-    blacklist = common.read_file(o_blacklist_fname)
-    if cmd in blacklist:
-        return random.choice(['svartlistat kommando', 
-                'jag har bättre saker för mej',
-                'nej', 'funkar inte'])
-
-    req = common.url_request(commands[cmd].format(nick=sendernick, args=args))
-    
-    try:
-        with urlopen(req) as s:
-            response = s.readline().decode('utf-8', 'replace')
-    except HTTPError as e:
-        o_blacklist_this(cmd)
-        return 'HTTPError: {}'.format(e.code)
-    except URLError as e:
-        o_blacklist_this(cmd)
-        return 'URLError: {}'.format(e.reason)
-
-    return response
 
 
 # Plugins
@@ -290,13 +188,8 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
     plugins = get_plugins()
 
-    # .o
-    if msg.startswith('.o '):
-        commands = get_o_commands()
-        return make_privmsgs(run_o_command(sendernick, msg, commands), channel)
-
     # .blacklist
-    elif msg.startswith('.blacklist ') and is_admin:
+    if msg.startswith('.blacklist ') and is_admin:
         return make_privmsgs(o_blacklist_commands(sendernick, msg), channel)
 
     # .giveop
