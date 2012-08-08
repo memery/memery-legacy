@@ -25,3 +25,9 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# memery specific
+userblacklist
+adminlist
+config
+o-blacklist
