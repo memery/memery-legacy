@@ -31,6 +31,12 @@ def read_json(fname):
       content = json.loads(f.read())
     return content
 
+def truncate(str, size):
+  if len(str) > size:
+    return str[:size - 1] + '…'
+  else:
+    return str
+
 def _is_in_list(sendernick, senderident, fname):
     list_ = read_file(fname)
     for regex in list_:
