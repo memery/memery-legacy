@@ -47,6 +47,7 @@ ALLITD             -> ALLITD
 \.lök              -> <Goebbels> Nu ska jag handla LÖK.
 \.lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
 LÖ+K               -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
+\.mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
 
 # === SMÅPLOCK === #
 echo {arg}         -> {arg}
