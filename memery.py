@@ -71,13 +71,7 @@ def run_irc(settings):
                         running = False
                         break
                     if msgdata['msg'] == '{}: reload'.format(nick):
-                        try:
-                            reload(interpretor)
-                            command_prefix = common.read_json('config')['command_prefix']
-                        except Exception as e:
-                            send('PRIVMSG {} :{}'.format(msgdata['channel'], e))
-                        else:
-                            send('PRIVMSG {} :reloaded'.format(msgdata['channel']))
+                        try_to_reload(interpretor, common)
                         continue
                     if msgdata['msg'] == '{}: stfu'.format(nick):
                         if quiet:
@@ -86,6 +80,14 @@ def run_irc(settings):
                         else:
                             send('PRIVMSG {} :afk'.format(msgdata['channel']))
                             quiet = True
+                        continue
+                    if msgdata['msg'] == '{}: sup?'.format(nick):
+                        if errorstack:
+                            msg = 'crashing: {}'.format(errorstack[-1])
+                        else:
+                            msg = 'just fiiiiine baby'
+                        send('PRIVMSG {} :{}'.format(msgdata['channel'], msg))
+                        continue
 
                 ## END DEBUG
                 if quiet:
