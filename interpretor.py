@@ -118,7 +118,7 @@ def get_command_imports(lines):
                 fp.close()
     return out
 
-def get_output(msg='', myname='', sender='', channel=''):
+def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
     msg = msg.strip()
 
     cmdsplit_re = re.compile('\s+->\s+')
@@ -131,7 +131,8 @@ def get_output(msg='', myname='', sender='', channel=''):
     imports = get_command_imports(importlines)
 
     format_answer = lambda t, arg: t.format(message=msg, myname=myname,
-                     channel=channel, sender=sender, arg=arg, qarg=quote(arg))
+                     channel=channel, sender=sender, arg=arg, qarg=quote(arg),
+                     c=command_prefix)
     exec_answer = lambda code, arg: eval(code, imports, 
                     {'arg':arg, 'qarg':quote(arg), 'message':msg,
                      'sender':sender, 'channel':channel, 'myname':myname})
@@ -210,7 +211,7 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname='', com
 
     # Rest of the commands
     else:
-        output = get_output(msg, myname, sendernick, channel)
+        output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
             return make_privmsgs(output, channel)
         else:
