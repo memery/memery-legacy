@@ -18,20 +18,22 @@ def safeprint(text):
         print(text.encode(errors='replace'))
 
 
-def run_irc(network, port, channels, nick):
+def run_irc(settings):
     # YOU SHOULD NEVER USE irc.send() ALONE, USE send() INSTEAD!
     def send(text):
         irc.send(bytes(text + '\r\n', 'utf-8'))
         safeprint('<< ' + text)
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    irc.connect((network, port))
+    irc.connect((settings['server'], settings['port']))
     irc = ssl.wrap_socket(irc)
 
+    nick = settings['nick']
     send('NICK {}'.format(nick))
     send('USER {0} {0} {0} :{0}'.format(nick))
-    for channel in channels:
+    for channel in settings['channels']:
         send('JOIN {}'.format(channel))
 
+    command_prefix = d['command_prefix']
     quiet = False
     errorstack = []
     errorlimit = 2
@@ -57,6 +59,7 @@ def run_irc(network, port, channels, nick):
                     if msgdata['msg'] == '{}: reload'.format(nick):
                         try:
                             reload(interpretor)
+                            command_prefix = common.read_json('config')['command_prefix']
                         except Exception as e:
                             send('PRIVMSG {} :{}'.format(msgdata['channel'], e))
                         else:
@@ -74,7 +77,7 @@ def run_irc(network, port, channels, nick):
                 if quiet:
                     continue
                 try:
-                    responses = interpretor.main_parse(myname=nick, **msgdata)
+                    responses = interpretor.main_parse(myname=nick, command_prefix=command_prefix, **msgdata)
                 except Exception as e:
                     msg = 'PRIVMSG {} :{}'.format(msgdata['channel'], e)
                     print(msg)
@@ -104,7 +107,7 @@ if __name__ == '__main__':
     d = {}
     try:
       d = common.read_json('config')
-      run_irc(d['server'], d['port'], d['channels'], d['nick'])
+      run_irc(d)
     except Exception as e:
       print('Invalid config: {}'.format(e))
 
