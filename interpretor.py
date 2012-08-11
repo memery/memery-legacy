@@ -187,6 +187,7 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname='', com
         return None
 
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
+    spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
     plugins = get_plugins()
 
     # .giveop
@@ -207,6 +208,24 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname='', com
     elif url_re.search(msg):
         titles = list(set([get_title(u) for u in set(url_re.findall(msg))]))
         return make_privmsgs(titles, channel)
+
+    # spotify title
+    elif spotify_url_re.search(msg):
+        matches = set(spotify_url_re.findall(msg))
+        def titles(ms):
+            for m in ms:
+                type, id = m[0], m[1]
+                # pointless exception handling in case get_title gets fixed
+                try:
+                    title = get_title('http://open.spotify.com/{0}/{1}'.format(type, id))
+                    formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
+                    yield formatted
+                except:
+                    pass
+        tittles = [t for t in titles(matches)]    # coerce generator to list
+
+        return make_privmsgs(tittles, channel)
+
 
 
     # Rest of the commands
