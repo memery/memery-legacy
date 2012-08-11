@@ -19,6 +19,7 @@
 # Vänster sida:
 #   * tolkas som REGEX
 #   * {arg} byts ut mot (.+?)
+#   * {c} byts ut mot command_prefix i config
 # Höger sida:
 #   * bara string formatting
 #   * {arg} står för vad {arg} innehöll på höger sida
@@ -34,30 +35,30 @@ calendar, datetime, random, urllib
 
 
 # === MEMES === #
-\.tidigt           -> <calle> {sender} går alltid och lägger sig tidigt
-\.tidigt {arg}     -> <calle> {arg} går alltid och lägger sig tidigt
-\.tidigt/me {arg}  -> * {arg} går alltid och lägger sig tidigt
-\.nej              -> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
-\.allitd {arg}     -> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
+{c}tidigt           -> <calle> {sender} går alltid och lägger sig tidigt
+{c}tidigt {arg}     -> <calle> {arg} går alltid och lägger sig tidigt
+{c}tidigt/me {arg}  -> * {arg} går alltid och lägger sig tidigt
+{c}nej              -> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
+{c}allitd {arg}     -> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
 ALLITD             -> ALLITD
-\.rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
-\.wannab           -> luktar wanna b amerikan
-\.murk( hyad)?     -> ☻
-\.lose             -> The Game.
-\.lök              -> <Goebbels> Nu ska jag handla LÖK.
-\.lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
+{c}rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
+{c}wannab           -> luktar wanna b amerikan
+{c}murk( hyad)?     -> ☻
+{c}lose             -> The Game.
+{c}lök              -> <Goebbels> Nu ska jag handla LÖK.
+{c}lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
 LÖ+K               -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
-\.mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
+{c}mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
 
 # === SMÅPLOCK === #
 echo {arg}         -> {arg}
 {myname}!          -> wuh?
-\.title            -> nej
-\.ping             -> pong
+{c}title            -> nej
+{c}ping             -> pong
 
 # === KOMMANDON === # 
-\.choose {arg}     -> #py: random.choice(arg.split('|')).strip()
-\.tyda {arg}       -> {sender}: http://tyda.se/search/{qarg}
-\.hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
-\.vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
-\.jdn              -> #py: '{0}: Current julian day: {1:.5f}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
+{c}choose {arg}     -> #py: random.choice(arg.split('|')).strip()
+{c}tyda {arg}       -> {sender}: http://tyda.se/search/{qarg}
+{c}hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
+{c}vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
+{c}jdn              -> #py: '{0}: Current julian day: {1:.5f}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)

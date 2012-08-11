@@ -120,7 +120,7 @@ def get_command_imports(lines):
                 fp.close()
     return out
 
-def get_output(msg='', myname='', sender='', channel=''):
+def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
     msg = msg.strip()
 
     cmdsplit_re = re.compile('\s+->\s+')
@@ -133,7 +133,8 @@ def get_output(msg='', myname='', sender='', channel=''):
     imports = get_command_imports(importlines)
 
     format_answer = lambda t, arg: t.format(message=msg, myname=myname,
-                     channel=channel, sender=sender, arg=arg, qarg=quote(arg))
+                     channel=channel, sender=sender, arg=arg, qarg=quote(arg),
+                     c=command_prefix)
     exec_answer = lambda code, arg: eval(code, imports, 
                     {'arg':arg, 'qarg':quote(arg), 'message':msg,
                      'sender':sender, 'channel':channel, 'myname':myname})
@@ -176,7 +177,7 @@ def random_talk(sendernick, msg):
 
 # Entry point
 
-def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
+def main_parse(msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
     The returned values from this function should be valid
@@ -191,17 +192,17 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
     plugins = get_plugins()
 
     # .giveop
-    if msg.startswith('.giveop ') and is_admin:
+    if msg.startswith(command_prefix + 'giveop ') and is_admin:
         return giveop(msg, channel)
 
     # memery:
-    elif msg.startswith('{}: '.format(myname)):
+    elif re.match('{}.? '.format(myname), msg):
         return make_privmsgs(nudge_response(sendernick, msg), channel)
     # # .help
     # elif msg.startswith('.help '):
 
     # plugins:
-    elif msg.startswith('.') and msg.split()[0][1:] in plugins:
+    elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
         return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
 
     # Title
@@ -212,7 +213,7 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname=''):
 
     # Rest of the commands
     else:
-        output = get_output(msg, myname, sendernick, channel)
+        output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
             return make_privmsgs(output, channel)
         else:
