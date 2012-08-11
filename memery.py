@@ -23,6 +23,20 @@ def run_irc(network, port, channels, nick):
     def send(text):
         irc.send(bytes(text + '\r\n', 'utf-8'))
         safeprint('<< ' + text)
+
+    def try_to_reload(*modules):
+        reloaded = []
+        for m in modules:
+            print(m)
+            try:
+                reload(m)
+            except Exception as e:
+                send('PRIVMSG {} :{}: {}'.format(msgdata['channel'], m.__name__, e))
+            else:
+                reloaded.append(m.__name__)
+        if reloaded:
+            send('PRIVMSG {} :reloaded: {}'.format(msgdata['channel'], ', '.join(reloaded)))
+
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc.connect((network, port))
     irc = ssl.wrap_socket(irc)
@@ -55,12 +69,7 @@ def run_irc(network, port, channels, nick):
                         running = False
                         break
                     if msgdata['msg'] == '{}: reload'.format(nick):
-                        try:
-                            reload(interpretor)
-                        except Exception as e:
-                            send('PRIVMSG {} :{}'.format(msgdata['channel'], e))
-                        else:
-                            send('PRIVMSG {} :reloaded'.format(msgdata['channel']))
+                        try_to_reload(interpretor, common)
                         continue
                     if msgdata['msg'] == '{}: stfu'.format(nick):
                         if quiet:
@@ -88,10 +97,10 @@ def run_irc(network, port, channels, nick):
                     else:
                         continue
                 else:
-                    if errorstack:
-                        errorstack = []
                     if responses == None:
                         continue
+                    if errorstack:
+                        errorstack = []
                     for r in responses:
                         if type(r) == type('') and len(r) > 0:
                             send(r)

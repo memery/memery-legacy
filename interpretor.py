@@ -73,11 +73,13 @@ def get_title(url):
     enc = re.search(b'<meta.+?charset="?(.+?)["; ].*?>', page)
     if enc:
         enc = enc.group(1).decode()
+        content = page.decode(enc, 'replace')
     else:
-        enc = 'utf-8'
-    
-    # And then decode it to utf-8
-    content = page.decode(enc, 'replace')
+        # And then decode it to utf-8
+        try:
+            content = page.decode('utf-8')
+        except:
+            content = page.decode('latin-1', 'replace')
 
     title_re = re.compile('<title.*?>(.+?)</title>', re.IGNORECASE | re.DOTALL)
     rawtitle = title_re.search(content)

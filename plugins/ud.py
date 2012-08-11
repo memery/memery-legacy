@@ -1,4 +1,3 @@
-
 import common
 import re
 
@@ -14,9 +13,7 @@ def run(nick, args):
 
 def search(args):
   url = "http://www.urbandictionary.com/define.php?term=" + common.quote(args)
-  request = common.url_request(url)
-  with common.urlopen(request) as s:
-    content = s.read().decode('utf-8', 'replace')
+  content = common.read_url(url)
 
   try:
     match = re.search(r'<div class="definition">(.+?)</div>.*?<div class="example">(.+?)</div>', content)
