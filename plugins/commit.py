@@ -17,7 +17,6 @@ def commit():
   with common.urlopen(request) as s:
     content = s.read().decode('utf-8', 'replace')
 
-  print(content)
   message = re.search(r'<p>(.+?)\n', content).group(1)
   return message
 
