@@ -189,17 +189,17 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname='', com
     plugins = get_plugins()
 
     # .giveop
-    if msg.startswith('.giveop ') and is_admin:
+    if msg.startswith(command_prefix + 'giveop ') and is_admin:
         return giveop(msg, channel)
 
     # memery:
-    elif msg.startswith('{}: '.format(myname)):
+    elif re.match('{}.? '.format(myname), msg):
         return make_privmsgs(nudge_response(sendernick, msg), channel)
     # # .help
     # elif msg.startswith('.help '):
 
     # plugins:
-    elif msg.startswith('.') and msg.split()[0][1:] in plugins:
+    elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
         return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
 
     # Title

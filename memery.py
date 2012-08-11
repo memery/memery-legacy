@@ -33,6 +33,7 @@ def run_irc(settings):
     for channel in settings['channels']:
         send('JOIN {}'.format(channel))
 
+    command_prefix = d['command_prefix']
     quiet = False
     errorstack = []
     errorlimit = 2
@@ -76,7 +77,7 @@ def run_irc(settings):
                 if quiet:
                     continue
                 try:
-                    responses = interpretor.main_parse(myname=nick, **msgdata)
+                    responses = interpretor.main_parse(myname=nick, command_prefix=command_prefix, **msgdata)
                 except Exception as e:
                     msg = 'PRIVMSG {} :{}'.format(msgdata['channel'], e)
                     print(msg)
