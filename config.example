@@ -1,0 +1,13 @@
+{
+  "irc": {
+    "nick": "bot-nick",
+    "channels": ["#channel", "#another"],
+    "server": "irc.efnet.org",
+    "port": 6669,
+    "ssl": false
+  },
+
+  "behaviour": {
+    "command_prefix": "@"
+  }
+}
