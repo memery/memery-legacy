@@ -40,16 +40,17 @@ def run_irc(settings):
 
 
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    irc.connect((settings['server'], settings['port']))
-    irc = ssl.wrap_socket(irc)
+    irc.connect((settings['irc']['server'], settings['irc']['port']))
+    if settings['irc']['ssl']:
+        irc = ssl.wrap_socket(irc)
 
-    nick = settings['nick']
+    nick = settings['irc']['nick']
     send('NICK {}'.format(nick))
     send('USER {0} {0} {0} :{0}'.format(nick))
-    for channel in settings['channels']:
+    for channel in settings['irc']['channels']:
         send('JOIN {}'.format(channel))
 
-    command_prefix = d['command_prefix']
+    command_prefix = d['behaviour']['command_prefix']
     quiet = False
     errorstack = []
     errorlimit = 2
@@ -58,7 +59,11 @@ def run_irc(settings):
     stack = []
     running = True
     while running:
-        readbuffer += irc.read(4096).decode('utf-8', 'replace')
+        if settings['irc']['ssl']:
+            readdata = irc.read(4096)
+        else:
+            readdata = irc.recv(4096)
+        readbuffer += readdata.decode('utf-8', 'replace')
         stack = readbuffer.split('\n')
         readbuffer = stack.pop()
         for rawdata in stack:
