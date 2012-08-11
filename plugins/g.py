@@ -13,9 +13,7 @@ def run(nick, args):
   return "{0}: {1}".format(nick, search(args))
 
 def search(args):
-  request = common.url_request("http://www.google.com/pda/?q=" + common.quote(args))
-  with common.urlopen(request) as s:
-    content = s.read().decode('utf-8', 'replace')
+  content = common.read_url("http://www.google.com/pda/?q=", args)
 
   try:
     match = re.search(r'<div class="jd"><a class="p" href="(.+?)".*?>(.+?)</a>', content)

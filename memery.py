@@ -23,6 +23,22 @@ def run_irc(settings):
     def send(text):
         irc.send(bytes(text + '\r\n', 'utf-8'))
         safeprint('<< ' + text)
+
+    def try_to_reload(*modules):
+        reloaded = []
+        for m in modules:
+            print(m)
+            try:
+                reload(m)
+            except Exception as e:
+                send('PRIVMSG {} :{}: {}'.format(msgdata['channel'], m.__name__, e))
+            else:
+                reloaded.append(m.__name__)
+        if reloaded:
+            send('PRIVMSG {} :reloaded: {}'.format(msgdata['channel'], ', '.join(reloaded)))
+
+
+
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc.connect((settings['server'], settings['port']))
     irc = ssl.wrap_socket(irc)
@@ -52,26 +68,32 @@ def run_irc(settings):
                 send('PONG ' + rawdata.split()[1])
             elif rawdata.split()[1] == 'PRIVMSG':
                 msgdata = get_privmsg_info(rawdata, nick)
+
+                def cmd(text):
+                    return re.match(nick + r'[:,]\s+' + text, msgdata['msg']) != None
                 if common.is_admin(msgdata['sendernick'], msgdata['senderident']):
-                    if msgdata['msg'] == '{}: quit'.format(nick):
+                    if cmd('quit'):
                         running = False
                         break
-                    if msgdata['msg'] == '{}: reload'.format(nick):
-                        try:
-                            reload(interpretor)
-                            command_prefix = common.read_json('config')['command_prefix']
-                        except Exception as e:
-                            send('PRIVMSG {} :{}'.format(msgdata['channel'], e))
-                        else:
-                            send('PRIVMSG {} :reloaded'.format(msgdata['channel']))
+                    if cmd('reload'):
+                        try_to_reload(interpretor, common)
                         continue
-                    if msgdata['msg'] == '{}: stfu'.format(nick):
+                    if cmd('stfu'):
                         if quiet:
-                            send('PRIVMSG {} :bax'.format(msgdata['channel']))
+                            msg = 'bax'
                             quiet = False
                         else:
-                            send('PRIVMSG {} :afk'.format(msgdata['channel']))
+                            msg = 'afk'
                             quiet = True
+                        send('PRIVMSG {} :{}'.format(msgdata['channel'], msg))
+                        continue
+                    if cmd('sup?'):
+                        if errorstack:
+                            msg = 'crashing: {}'.format(errorstack[-1])
+                        else:
+                            msg = 'just fiiiiine baby'
+                        send('PRIVMSG {} :{}'.format(msgdata['channel'], msg))
+                        continue
 
                 ## END DEBUG
                 if quiet:
@@ -80,21 +102,21 @@ def run_irc(settings):
                     responses = interpretor.main_parse(myname=nick, command_prefix=command_prefix, **msgdata)
                 except Exception as e:
                     msg = 'PRIVMSG {} :{}'.format(msgdata['channel'], e)
-                    print(msg)
+                    safeprint(msg)
                     if len(errorstack) < errorlimit:
-                        if not errorstack or errorstack[-1] == msg:
-                            errorstack.append(msg)
+                        if not errorstack or errorstack[-1] == str(e):
+                            errorstack.append(str(e))
                         send(msg)
-                    elif errorstack[-1] != msg:
+                    elif errorstack[-1] != str(e):
                         send(msg)
-                        errorstack = errorlimit * [msg]
+                        errorstack = errorlimit * [str(e)]
                     else:
                         continue
                 else:
-                    if errorstack:
-                        errorstack = []
                     if responses == None:
                         continue
+                    if errorstack:
+                        errorstack = []
                     for r in responses:
                         if type(r) == type('') and len(r) > 0:
                             send(r)

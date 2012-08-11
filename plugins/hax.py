@@ -1,4 +1,4 @@
-from common import urlopen, quote
+import common
 import json, re
 
 def help():
@@ -12,10 +12,7 @@ def run(nick, args):
   return re.sub('\s+', ' ', haskell(args))
 
 def haskell(args):
-  url = "http://tryhaskell.org/haskell.json?method=eval&expr={}".format(quote(args))
-
-  with urlopen(url) as s:
-    data = s.read().decode('utf-8')
+  data = common.read_url("http://tryhaskell.org/haskell.json?method=eval&expr=", args)
 
   jsondata = json.JSONDecoder(strict=False).decode(data)
 

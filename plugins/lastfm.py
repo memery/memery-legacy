@@ -21,9 +21,7 @@ def lastfm(args):
   except IOError:
     raise IOError('No key for last.fm API found. Create file lastfm-api-key with only the key in it in the working directory of the bot.')
 
-  request = common.url_request("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&api_key={1}&user={0}".format(common.quote(args), key))
-  with common.urlopen(request) as s:
-    content = s.read().decode('utf-8', 'replace')
+  content = common.read_url("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&api_key={0}&user={1}".format(key, common.quote(args)))
 
   dom = xml.dom.minidom.parseString(content)
   latesttrack = dom.getElementsByTagName('track')[0]

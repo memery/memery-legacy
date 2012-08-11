@@ -13,9 +13,7 @@ def run(nick, args):
   return "{0}: {1}".format(nick, calc(args))
 
 def calc(args):
-  request = common.url_request("http://www.google.com/ig/calculator?h=en&q=" + common.quote(args))
-  with common.urlopen(request) as s:
-    content = s.read().decode('utf-8', 'replace')
+  content = common.read_url("http://www.google.com/ig/calculator?h=en&q=", args)
 
   lhs = sanitise(re.search(r'lhs: "(.*?)"', content).group(1))
   rhs = sanitise(re.search(r'rhs: "(.*?)"', content).group(1))

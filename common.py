@@ -8,6 +8,19 @@ def url_request(url):
     req.add_header('User-Agent', 'Mozilla/5.0 memery')
     return req
 
+def read_url(url, args='', quote_=True):
+    if args:
+        if quote_:
+            args = quote(args)
+        url += str(args)
+    with urlopen(url_request(url)) as s:
+        page = s.read()
+    try:
+        content = page.decode('utf-8')
+    except:
+        content = page.decode('latin-1', 'replace')
+    return content
+
 def read_file(fname):
     if not os.path.isfile(fname):
         with open(fname, mode='w', encoding='utf-8') as f:
@@ -21,21 +34,21 @@ def read_file(fname):
         return lines
 
 def read_json(fname):
-  if not os.path.isfile(fname):
-    with open(fname, mode='w', encoding='utf-8') as f:
-      print('NEWFILE!!!!')
-      f.write('')
-    return {}
-  else:
-    with open(fname, encoding='utf-8') as f:
-      content = json.loads(f.read())
-    return content
+    if not os.path.isfile(fname):
+        with open(fname, mode='w', encoding='utf-8') as f:
+            print('NEWFILE!!!!')
+            f.write('')
+        return {}
+    else:
+        with open(fname, encoding='utf-8') as f:
+            content = json.loads(f.read())
+        return content
 
 def truncate(str, size):
-  if len(str) > size:
-    return str[:size - 1] + '…'
-  else:
-    return str
+    if len(str) > size:
+        return str[:size - 1] + '…'
+    else:
+        return str
 
 def _is_in_list(sendernick, senderident, fname):
     list_ = read_file(fname)
