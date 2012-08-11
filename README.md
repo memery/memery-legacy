@@ -9,29 +9,34 @@ Written in Python 3, not compatible with Python 2.
 Config files
 ------------
 
-No config files are in the repo, they have to be created locally. If they do
-not exist when memery needs them, empty ones will be created.
-(This does not apply to config, memery will crash without it)
+memery uses three configuration files.
 
-All of them except the main configuration will ignore empty lines and lines
-starting with #.
+* `config`. This is the only configuration file required to run.
+* `adminlist`. This is recommended, but not required.
+* `userblacklist`. This is entirely optional and hopefully not needed at all.
 
 ### config
 
-This file is read only on startup and should contain memery's nick, channel(s),
-server, port and command prefix (currently unused.) The file is written in 
-JSON. Example:
+This is the base configuration file which memery needs to run; memery will
+refuse to start without this file. The file is written in JSON and an example
+is provided in the repo. Rename `config.example` to just `config` and edit the
+values however you wish to get started quickly.
 
-    {
-        "nick": "memery",
-        "channels": ["#channel"],
-        "server": "serv.errr.net",
-        "port": 1234,
-        "command_prefix": "!"
-    }
+The values in `config` are as explained:
 
-Note the 's' in channelS! It should be there even if only one channels it to be
-joined.
+* `nick`: The nick memery will use on the network. Please pick a nick that is
+unused. memery will not be able to connect with an occupied nick.
+* `channels`: A list of channels memery will join.
+* `server`: The server memery will connect to.
+* `port`: The port memery will connect to.
+* `ssl`: Whether or not memery should connect using SSL.
+* `command_prefix`: Most commands are executed with something like `!ping`
+or `.ping` or `@ping` or perhaps even `command: ping`. This setting dictates
+the leading character sequence that will identify a command.
+
+At the moment, it is unfortunately not possible to reload `config` during
+execution. This will probably only be a problem if you wish to change the nick
+or command prefix during execution.
 
 
 ### adminlist
@@ -40,6 +45,9 @@ This file contains regexes of everyone that should be able to reload, kill,
 or otherwise violently violate memery at their will. The regexes are standard
 python regular expressions, run on the whole name including hostname.
 (Eg. name!~nick@host.name.net)
+
+Any empty lines or lines starting with # will be considered whitespace and
+ignored.
 
 This file is not cached and changes you make to it will be apparent
 immediately.
