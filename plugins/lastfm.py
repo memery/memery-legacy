@@ -1,5 +1,6 @@
 
 import common
+from urllib.error import HTTPError
 import xml.dom.minidom
 import re
 
@@ -21,7 +22,11 @@ def lastfm(args):
   except IOError:
     raise IOError('No key for last.fm API found. Create file lastfm-api-key with only the key in it in the working directory of the bot.')
 
-  content = common.read_url("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&api_key={0}&user={1}".format(key, common.quote(args)))
+  try:
+    content = common.read_url("http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&api_key={0}&user={1}".format(key, common.quote(args)))
+  except HTTPError:
+    return "Couldn't find a user with name {}.".format(args)
+
 
   dom = xml.dom.minidom.parseString(content)
   latesttrack = dom.getElementsByTagName('track')[0]
