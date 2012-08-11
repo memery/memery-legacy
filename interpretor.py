@@ -19,7 +19,7 @@ def get_plugins():
     plugins = [x[:-3] for x in os.listdir('plugins') if x.endswith('.py')]
     return plugins
 
-def run_plugin(sendernick, msg, pluginname):
+def run_plugin(sendernick, msg, pluginname, help=False):
     # Get the argument(s)
     msgchunks = msg.split(None, 1)
     if len(msgchunks) > 1:
@@ -36,7 +36,12 @@ def run_plugin(sendernick, msg, pluginname):
 
     # Run the plugin
     try:
-        response = plugin.run(sendernick, args)
+        if help:
+            info = plugin.help()
+            response = ['{0}: {1}'.format(pluginname, info['description']),
+                        'Usage: {0}{1} {2}'.format(help[1], pluginname, info['argument'])]
+        else:
+            response = plugin.run(sendernick, args)
     except NotImplementedError:
         return None
     except Exception as e:
@@ -199,8 +204,10 @@ def main_parse(msg='', sendernick='', senderident='', channel='', myname='', com
     # memery:
     elif re.match('{}.? '.format(myname), msg):
         return make_privmsgs(nudge_response(sendernick, msg), channel)
-    # # .help
-    # elif msg.startswith('.help '):
+
+    # .help
+    elif msg.startswith(command_prefix + 'help ') and msg.split()[1] in plugins:
+        return make_privmsgs(run_plugin(sendernick, msg, msg.split()[1], help=(True, command_prefix)), channel)
 
     # plugins:
     elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
