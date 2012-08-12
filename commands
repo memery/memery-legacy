@@ -40,19 +40,20 @@ calendar, datetime, random, urllib
 {c}tidigt/me {arg}  -> * {arg} går alltid och lägger sig tidigt
 {c}nej              -> <jocke-l> jag har alltid och nej, det har jag inte.[\n]<jocke-l> ALLITD
 {c}allitd {arg}     -> <jocke-l> jag har alltid och {arg}[\n]<jocke-l> ALLITD
-ALLITD             -> ALLITD
+ALLITD              -> ALLITD
 {c}rullar {arg}     -> {arg} rullar in som det ska[\n]det går bra nu
 {c}wannab           -> luktar wanna b amerikan
 {c}murk( hyad)?     -> ☻
 {c}lose             -> The Game.
 {c}lök              -> <Goebbels> Nu ska jag handla LÖK.
 {c}lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
-LÖ+K               -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
+LÖ+K                -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
 {c}mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
+{c}yo               -> * Pranz joined the channel[\n]<Pranz> Yo[\n]<calle> micraft server[\n]<Pranz> Vad ligger den på?[\n][lång tystnad]
 
 # === SMÅPLOCK === #
-echo {arg}         -> {arg}
-{myname}!          -> wuh?
+echo {arg}          -> {arg}
+{myname}!           -> wuh?
 {c}title            -> nej
 {c}ping             -> pong
 
