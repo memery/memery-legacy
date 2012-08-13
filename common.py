@@ -3,6 +3,16 @@ import json
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+def safeprint(text):
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(text.encode(errors='replace'))
+
+def log(text):
+    # TODO: not this
+    safeprint(text)
+
 def url_request(url):
     req = Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 memery')

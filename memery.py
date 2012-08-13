@@ -1,6 +1,5 @@
-import common, os.path, re, socket, ssl
 from imp import reload
-import interpretor
+import common, irc
 
 def get_privmsg_info(text, nick):
     _info, msg = text[1:].strip().split(':', 1)
@@ -10,12 +9,6 @@ def get_privmsg_info(text, nick):
         channel = sendernick
     return {'msg':msg.strip(), 'sendernick':sendernick.strip(), 
             'senderident':senderident.strip(), 'channel':channel.strip()}
-
-def safeprint(text):
-    try:
-        print(text)
-    except UnicodeEncodeError:
-        print(text.encode(errors='replace'))
 
 
 def run_irc(settings):
@@ -124,12 +117,29 @@ def run_irc(settings):
     send('QUIT :baiiiii')
     irc.close()
 
+
+
+def main():
+    # Crash like hell if the config is crap!
+    settings = common.read_json('config')
+    # Kind of like state
+    message = ''
+    while True:
+        result = irc.run(message, settings)
+        message = ''
+        if result == 'reconnect':
+            continue
+        elif result == 'restart':
+            try:
+                reload(irc)
+            except Exception as e:
+                message = str(e)
+            continue
+        else:
+            break
+
+
+
 if __name__ == '__main__':
-    # Let the whole damn thing crash if the config is crap!
-    d = {}
-    try:
-      d = common.read_json('config')
-      run_irc(d)
-    except Exception as e:
-      print('Invalid config: {}'.format(e))
+    main()
 

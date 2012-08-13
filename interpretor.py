@@ -9,7 +9,7 @@ import common
 def make_privmsgs(texts, channel):
     if type(texts) != type([]):
         texts = [texts]
-    return ['PRIVMSG {} :{}'.format(channel, t) 
+    return [{'type': 'message', 'message': t, 'channel': channel}
             for t in texts if t]
 
 
@@ -177,12 +177,20 @@ def random_talk(sendernick, msg):
 
 # Entry point
 
-def main_parse(msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
+def main_parse(data, myname, command_prefix):
+# msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
     The returned values from this function should be valid
     irc message, minus the trailing \r\n.
+
+    NO IT SHOULD NOT
     """
+    msg = data['message']
+    channel = data['channel']
+    sendernick = data['sendernick']
+    senderident = data['senderident']
+
     is_admin = common.is_admin(sendernick, senderident)
 
     if common.is_blacklisted(sendernick, senderident):
