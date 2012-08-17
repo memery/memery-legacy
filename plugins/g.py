@@ -3,28 +3,27 @@ import common
 import re
 
 def help():
-  return {'authors':     ['kqr'],
-          'years':       ['2012'],
-          'version':     '1.0',
-          'description': 'Interface to Google via /pda search page and regexes. (APIs are for wussies.)',
-          'argument':    '<google query>'}
+    return {'authors':     ['kqr'],
+            'years':       ['2012'],
+            'version':     '1.2',
+            'description': 'Interface to Google via some kind of ajax json API.',
+            'argument':    '<google query>'}
 
 def run(nick, args):
-  return "{0}: {1}".format(nick, search(args))
+    return "{0}: {1}".format(nick, search(args))
 
 def search(args):
-  content = common.read_url("http://www.google.com/pda/?q=", args)
+    hits = common.read_json(common.read_url("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&safe=off&q=", args))['responseData']['results']
 
-  try:
-    match = re.search(r'<div class="jd"><a class="p" href="(.+?)".*?>(.+?)</a>', content)
-    link = match.group(1)
-    title = re.sub(r'<.+?>', '', match.group(2))
-    if link[:4] != "http":
-      link = re.search(r'q=(http.+?)&amp;', link).group(1)
-    result = "{0} -- {1}".format(title, link)
-  except AttributeError:
-    result = "No hits."
+    if hits:
+        striphtml = lambda s: re.sub(r'<.+?>', '', re.sub(r'  +', '', s))
+        url = striphtml(hits[0]['url'])
+        title = striphtml(hits[0]['title'])
+        content = striphtml(hits[0]['content'])
+        result = "{1}: {2} -- {0}".format(url, title, content)
+    else:
+        result = "No hits."
 
-  return result
+    return result
 
 
