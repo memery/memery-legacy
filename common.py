@@ -29,20 +29,14 @@ def read_file(fname):
         return []
     else:
         with open(fname, encoding='utf-8') as f:
-            lines = [l for l in f.read().splitlines()
-                     if l and not l.startswith('#')]
-        return lines
+            return f.read()
 
-def read_json(fname):
-    if not os.path.isfile(fname):
-        with open(fname, mode='w', encoding='utf-8') as f:
-            print('NEWFILE!!!!')
-            f.write('')
-        return {}
-    else:
-        with open(fname, encoding='utf-8') as f:
-            content = json.loads(f.read())
-        return content
+def read_lineconf(str):
+    return [l for l in str.splitlines()
+            if l and not l.startswith('#')]
+
+def read_json(str):
+    return json.loads(str)
 
 def truncate(str, size):
     if len(str) > size:
@@ -51,7 +45,7 @@ def truncate(str, size):
         return str
 
 def _is_in_list(sendernick, senderident, fname):
-    list_ = read_file(fname)
+    list_ = read_lineconf(read_file(fname))
     for regex in list_:
         if re.match(regex, sendernick + '!' + senderident, re.IGNORECASE) != None:
             return True

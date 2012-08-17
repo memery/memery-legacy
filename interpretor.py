@@ -130,7 +130,7 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
 
     cmdsplit_re = re.compile('\s+->\s+')
 
-    lines = common.read_file('commands')
+    lines = common.read_lineconf(common.read_file('commands'))
 
     importlines = [x for x in lines if cmdsplit_re.search(x) == None]
     cmdlines = [x for x in lines if x not in importlines]

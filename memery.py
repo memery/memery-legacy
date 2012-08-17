@@ -133,7 +133,7 @@ if __name__ == '__main__':
     # Let the whole damn thing crash if the config is crap!
     d = {}
     try:
-      d = common.read_json('config')
+      d = common.read_json(common.read_file('config'))
       run_irc(d)
     except Exception as e:
       print('Invalid config: {}'.format(e))
