@@ -16,7 +16,7 @@ def run(nick, args):
 
 def lastfm(args):
   try:
-    key = common.read_file("lastfm-api-key")[0]
+    key = common.read_lineconf(common.read_file("lastfm-api-key"))[0]
     if not (len(key) == 32 and re.search(r'^[0-9a-f]+$', key)):
       raise IOError
   except IOError:
