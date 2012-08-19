@@ -39,7 +39,7 @@ def lastfm(args):
   else:
     playstatus = "last played"
 
-  return "{0} {1} {2} ({3}) -- http://www.last.fm/user/{0}/tracks".format(args, playstatus, title, artist)
+  return "{0} {1} {2} ({3}) -- History: http://www.last.fm/user/{0}/tracks".format(args, playstatus, title, artist)
 
 
 
