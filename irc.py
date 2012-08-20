@@ -14,14 +14,6 @@ def init_irc(settings):
         send(irc, 'JOIN {}'.format(channel))
     return irc
 
-def send(irc, text):
-    irc.send(bytes(text + '\r\n', 'utf-8'))
-    log_output(text)
-
-def quit(irc):
-    send(irc, 'QUIT :baiiiii')
-    irc.close()
-
 def log(text):
     try:
         common.log(text)
@@ -34,8 +26,18 @@ def log_input(text):
 def log_output(text):
     log('<< ' + text)
 
-# This should not be repurposed to send_to_channel or some shit like that!
-# This should otoh get line numbers!
+def send(irc, text):
+    irc.send(bytes(text + '\r\n', 'utf-8'))
+    log_output(text)
+
+def send_privmsg(irc, channel, msg):
+    send(irc, 'PRIVMSG {} :{}'.format(channel, msg))
+
+def quit(irc):
+    send(irc, 'QUIT :baiiiii')
+    irc.close()
+
+
 def send_error(irc, channel, desc, error):
     exception_re = re.compile(r'File "(.+?)", line (\d+), (.+?)(\n|$)')
     try:
@@ -52,7 +54,7 @@ def send_error(irc, channel, desc, error):
                                    chunks[-1][1], chunks[-1][2])
     args = (desc, errortype, error, tb)
     if channel:
-        send(irc, 'PRIVMSG {} :{}: [{}] {} - {}'.format(channel, *args))
+        send_privmsg(irc, channel, '{}: [{}] {} - {}'.format(*args))
     else:
         log('<No channel> {}: [{}] {} - {}'.format(*args))
 
@@ -75,12 +77,27 @@ def is_admin(sender):
                 return True
         return False
 
+def get_channel(line, settings):
+    chunks = line.split()
+    try:        
+        if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE'):
+            return chunks[2]
+        elif chunks[1] == 'PRIVMSG':
+            if chunks[2] == settings['nick']:
+                return chunks[0][1:]
+            else:
+                return chunks[2]
+    except IndexError:
+        print('get_channel index error!') #TODO: remove this
+        return None
+    return None
+
 
 # ==== Parsing functions ====
 
-def exec_admin_cmd(irc, line, settings):
+def exec_admin_cmd(irc, line, channel, settings, state):
     chunks = line.split(' ', 3)
-    if chunks[1] != 'PRIVMSG':
+    if chunks[1] != 'PRIVMSG' or not channel:
         return
     # Is someone talking to me?
     rawcmd = re.match(r':{}[,:]\s+?(.+)'.format(settings['nick']), chunks[3])
@@ -103,9 +120,20 @@ def exec_admin_cmd(irc, line, settings):
                 send_error(irc, chunks[2], m.__name__, e)
             else:
                 reloaded.append(m.__name__)
-        send(irc, 'PRIVMSG {} :reloaded: {}'.format(chunks[2], ', '.join(reloaded)))
+        send_privmsg(irc, channel, 'reloaded: {}'.format(', '.join(reloaded)))
         return 'continue'
-    # elif cmd == 'stfu'
+    elif cmd == 'stfu':
+        # Toggle state
+        state['quiet'] = abs(state['quiet']-1)
+        # TODO: toggle away
+        if state['quiet']:
+            send_privmsg(irc, channel, 'afk')
+        elif not state['quiet']:
+            send_privmsg(irc, channel, 'bax')
+        return 'continue'
+    elif cmd == 'test':
+        send_privmsg(irc, channel, 'test')
+        return 'continue'
     # Not neccessary but spelled out for clarity
     else:
         return None
@@ -129,6 +157,7 @@ def run(message, settings): # message is unused for now
             send(irc, 'PRIVMSG {} :{}: {}'.format(settings['channels'][0],
                                                   '[statemsg]', message))
 
+    state = {'quiet': False}
     readbuffer = ''
     stack = []
     while True:
@@ -141,11 +170,11 @@ def run(message, settings): # message is unused for now
                 send(irc, 'PONG ' + line.split()[1])
                 continue
 
-            channel = ircparser.get_channel(line)
+            channel = get_channel(line, settings)
 
             # == Admin ==
             try:
-                admin_action = exec_admin_cmd(irc, line, settings)
+                admin_action = exec_admin_cmd(irc, line, channel, settings, state)
             except Exception as e:
                 send_error(irc, channel, 'admincmd', e)
             else:
@@ -156,6 +185,8 @@ def run(message, settings): # message is unused for now
                     return admin_action
             # == End admin ==
 
+            if state['quiet']:
+                continue
             
             # 1. Convert a raw irc message to interpretor-compatible data
             try:

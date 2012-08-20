@@ -1,8 +1,11 @@
 def get_channel(line):
     chunks = line.split()
-    try:        
-        if chunks[1] in ('PRIVMSG', 'KICK', 'TOPIC', 'JOIN', 'MODE'):
+    try:
+        if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE'):
             return chunks[2]
+        elif chunks[1] == 'PRIVMSG':
+            if chunks[2] == settings['nick']:
+                return chunks[0][1:]
     except IndexError:
         return None
     return None
