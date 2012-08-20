@@ -95,6 +95,8 @@ def get_title(url):
     No other exceptions/errors are handled.
     """
     content = read_url(url, content_whitelist=['text/html'])
+    if not content:
+        return None
 
     title_re = re.compile('<title.*?>(.+?)</title>', re.IGNORECASE | re.DOTALL)
     rawtitle = title_re.search(content)
