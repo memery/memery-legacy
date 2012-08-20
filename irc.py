@@ -44,15 +44,16 @@ def send_error(irc, channel, desc, error):
     try:
         stacktrace = traceback.format_exc()
         chunks = exception_re.findall(stacktrace)
-        errortype = stacktrace.split('\n')[-2]
+        # This does not seem to work
+        # errortype = stacktrace.split('\n')[-2]
     except:
         tb = '[bad/no stacktrace]'
-        errortype = str(type(error))[8:-2]
     else:
         if chunks:
             # file.py:38 in lolfunction
             tb = '{}:{} {}'.format(os.path.basename(chunks[-1][0]),
                                    chunks[-1][1], chunks[-1][2])
+    errortype = str(type(error))[8:-2]
     args = (desc, errortype, error, tb)
     if channel:
         send_privmsg(irc, channel, '{}: [{}] {} - {}'.format(*args))

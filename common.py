@@ -1,5 +1,4 @@
-import os.path, re
-import json
+import json, os.path, re, traceback
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
@@ -12,6 +11,32 @@ def safeprint(text):
 def log(text):
     # TODO: not this
     safeprint(text)
+
+def error_info(desc, error):
+    """ 
+    Return a useful string containing info about the current exception.
+    This should always be used when handling the exception yourself instead
+    of letting irc.py do it. Without this, no line numbers!
+
+    desc is a short description of what it was that just crashed
+    error is the exception that was catched
+    """
+    exception_re = re.compile(r'File "(.+?)", line (\d+), (.+?)(\n|$)')
+    try:
+        stacktrace = traceback.format_exc()
+        chunks = exception_re.findall(stacktrace)
+        # This does not seem to work
+        # errortype = stacktrace.split('\n')[-2]
+    except:
+        tb = '[bad/no stacktrace]'
+    else:
+        if chunks:
+            # [example]:   file.py:38 in lolfunction
+            tb = '{}:{} {}'.format(os.path.basename(chunks[-1][0]),
+                                   chunks[-1][1], chunks[-1][2])
+    errortype = str(type(error))[8:-2]
+    args = (desc, errortype, error, tb)
+    return '{}: [{}] {} - {}'.format(*args)
 
 def url_request(url):
     req = Request(url)

@@ -32,7 +32,7 @@ def run_plugin(sendernick, msg, pluginname, help=False):
         fp, pathname, description = imp.find_module(pluginname, ['plugins'])
         plugin = imp.load_module(pluginname, fp, pathname, description)
     except Exception as e:
-        return 'pluginen kunde inte laddas: {}'.format(e)
+        return common.error_info('pluginen kunde inte laddas', e)
 
     # Run the plugin
     try:
@@ -45,7 +45,7 @@ def run_plugin(sendernick, msg, pluginname, help=False):
     except NotImplementedError:
         return None
     except Exception as e:
-        return 'pluginen kraschade i runtime: {}'.format(e)
+        return common.error_info('pluginen kraschade i runtime', e)
     else:
         return response
 
@@ -65,22 +65,26 @@ def giveop(msg, channel):
     return None
 
 def get_title(url):
+    """ Return None if it does not have a title, crash if it should have """
     req = common.url_request(url)
-    try:
-        with urlopen(req) as s:
-            page = s.read()
-    except HTTPError as e:
-        return 'HTTPError: {}'.format(e.code)
-    except URLError as e:
-        return 'URLError: {}'.format(e.reason)
+    enc = None
+    with urlopen(req) as s:
+        if s.info().get_content_type() != 'text/html':
+            return None
+        if s.info().get_content_charset() != None:
+            encoding = s.info().get_content_charset()
+        page = s.read()
 
-    # Get the encoding of the page
-    enc = re.search(b'<meta.+?charset="?(.+?)["; ].*?>', page)
-    if enc:
-        enc = enc.group(1).decode()
-        content = page.decode(enc, 'replace')
-    else:
-        # And then decode it to utf-8
+    # Get the encoding of the page manually if there's no header
+    if not encoding:
+        metatag_encoding = re.search(b'<meta.+?charset="?(.+?)["; ].*?>', page)
+        if metatag_encoding:
+            encoding = metatag_encoding.group(1).decode()
+    if encoding:
+        content = page.decode(encoding, 'replace')
+
+    # Fallback, in case there is no known encoding
+    else:        
         try:
             content = page.decode('utf-8')
         except:
@@ -90,7 +94,8 @@ def get_title(url):
     rawtitle = title_re.search(content)
     if rawtitle:
         title = HTMLParser().unescape(rawtitle.group(1).strip())
-        return ' '.join(title.split())
+        # Get rid of unnecessary whitespace
+        return re.sub(r'\s+', ' ', title)
     else:
         return None
 
@@ -223,27 +228,38 @@ def main_parse(data, myname, command_prefix):
 
     # Title
     elif url_re.search(msg):
-        titles = list(set([get_title(u) for u in set(url_re.findall(msg))]))
-        return make_privmsgs(titles, channel)
+        out = []
+        titles = set()
+        errors = []
+        for url in set(url_re.findall(msg)):
+            try:
+                title = get_title(url)
+            except Exception as e:
+                errors.append(common.error_info(url, e))
+            else:
+                if title:
+                    titles.add(title)
+        if titles:
+            out.extend(titles)
+        if errors:
+            out.extend(errors)
+        if out:
+            return make_privmsgs(out, channel)
 
     # spotify title
     elif spotify_url_re.search(msg):
         matches = set(spotify_url_re.findall(msg))
         def titles(ms):
-            for m in ms:
-                type, id = m[0], m[1]
-                # pointless exception handling in case get_title gets fixed
+            for type_, id_ in ms:
                 try:
-                    title = get_title('http://open.spotify.com/{0}/{1}'.format(type, id))
+                    title = get_title('http://open.spotify.com/{0}/{1}'.format(type_, id_))
                     formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
                     yield formatted
-                except:
-                    pass
-        tittles = [t for t in titles(matches)]    # coerce generator to list
+                except Exception as e:
+                    yield common.error_info('Spotify error', e)
+        spotify_titles = [t for t in titles(matches)]    # coerce generator to list
 
-        return make_privmsgs(tittles, channel)
-
-
+        return make_privmsgs(spotify_titles, channel)
 
     # Rest of the commands
     else:
