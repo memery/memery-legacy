@@ -19,7 +19,12 @@ def get_plugins():
     plugins = [x[:-3] for x in os.listdir('plugins') if x.endswith('.py')]
     return plugins
 
-def run_plugin(sendernick, msg, pluginname, help=False):
+def load_plugin(pluginname):
+    fp, pathname, description = imp.find_module(pluginname, ['plugins'])
+    plugin = imp.load_module(pluginname, fp, pathname, description)
+    return plugin
+
+def run_plugin(sendernick, msg, pluginname):
     # Get the argument(s)
     msgchunks = msg.split(None, 1)
     if len(msgchunks) > 1:
@@ -29,25 +34,45 @@ def run_plugin(sendernick, msg, pluginname, help=False):
 
     # Load the plugin
     try:
-        fp, pathname, description = imp.find_module(pluginname, ['plugins'])
-        plugin = imp.load_module(pluginname, fp, pathname, description)
+        plugin = load_plugin(pluginname)
     except Exception as e:
         return common.error_info('pluginen kunde inte laddas', e)
 
     # Run the plugin
     try:
-        if help:
-            info = plugin.help()
-            response = ['{0}: {1}'.format(pluginname, info['description']),
-                        'Usage: {0}{1} {2}'.format(help[1], pluginname, info['argument'])]
-        else:
-            response = plugin.run(sendernick, args)
+        response = plugin.run(sendernick, args)
     except NotImplementedError:
         return None
     except Exception as e:
         return common.error_info('pluginen kraschade i runtime', e)
     else:
         return response
+
+def get_command_help(msg, sendernick, command_prefix, plugins):
+    chunks = msg.split()
+    if len(chunks) == 1:
+        return 'skriv {}help [kommando] för hjälp (lol du behöver hjälp!! ISSUE #49 KQR)'.format(command_prefix)
+    elif len(chunks) > 2:
+        # TODO: Fix this
+        return 'du svamlar för mycket'
+    pluginname = chunks[1]
+
+    if pluginname in plugins:
+        try:
+            plugin = load_plugin(pluginname)
+        except Exception as e:
+            return common.error_info('pluginen kunde inte laddas', e)
+        else:
+            try:
+                info = plugin.help()
+                return ['{}: {}'.format(pluginname, info['description']),
+                        'Usage: {}{} {}'.format(command_prefix, pluginname, 
+                                                info['argument'])]
+            except NotImplementedError:
+                return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, pluginname)
+    else:
+        # TODO: commands
+        return '{}: finns inget sånt kommando'.format(sendernick)
 
 
 # Main functions
@@ -206,6 +231,7 @@ def main_parse(data, myname, command_prefix):
     if common.is_blacklisted(sendernick, senderident):
         return None
 
+    help_re = re.compile(r'[{}]help(\s|$)'.format(command_prefix))
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
     spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
     plugins = get_plugins()
@@ -219,8 +245,8 @@ def main_parse(data, myname, command_prefix):
         return make_privmsgs(nudge_response(sendernick, msg), channel)
 
     # .help
-    elif msg.startswith(command_prefix + 'help ') and msg.split()[1] in plugins:
-        return make_privmsgs(run_plugin(sendernick, msg, msg.split()[1], help=(True, command_prefix)), channel)
+    elif help_re.match(msg):
+        return make_privmsgs(get_command_help(msg, sendernick, command_prefix, plugins), channel)
 
     # plugins:
     elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
