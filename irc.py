@@ -5,12 +5,13 @@ import common, ircparser, interpretor
 
 def init_irc(settings):
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    irc.connect((settings['server'], settings['port']))
-    irc = ssl.wrap_socket(irc)
+    irc.connect((settings['irc']['server'], settings['irc']['port']))
+    if settings['irc']['ssl']:
+        irc = ssl.wrap_socket(irc)
 
-    send(irc, 'NICK {}'.format(settings['nick']))
-    send(irc, 'USER {0} {0} {0} :{0}'.format(settings['nick']))
-    for channel in settings['channels']:
+    send(irc, 'NICK {}'.format(settings['irc']['nick']))
+    send(irc, 'USER {0} {0} {0} :{0}'.format(settings['irc']['nick']))
+    for channel in settings['irc']['channels']:
         send(irc, 'JOIN {}'.format(channel))
     return irc
 
@@ -83,7 +84,7 @@ def get_channel(line, settings):
         if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE'):
             return chunks[2]
         elif chunks[1] == 'PRIVMSG':
-            if chunks[2] == settings['nick']:
+            if chunks[2] == settings['irc']['nick']:
                 return chunks[0][1:]
             else:
                 return chunks[2]
@@ -100,7 +101,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
     if chunks[1] != 'PRIVMSG' or not channel:
         return
     # Is someone talking to me?
-    rawcmd = re.match(r':{}[,:]\s+?(.+)'.format(settings['nick']), chunks[3])
+    rawcmd = re.match(r':{}[,:]\s+?(.+)'.format(settings['irc']['nick']), chunks[3])
     if rawcmd == None:
         return
     # Make sure its an admin who's talking
@@ -143,7 +144,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
 def run(message, settings): # message is unused for now
     try:
-        settings = common.read_json('config')
+        settings = common.read_json(common.read_file('config'))
     except Exception as e:
         log('Invalid config: {}'.format(e))
         # TODO: this
@@ -153,15 +154,20 @@ def run(message, settings): # message is unused for now
 
     if message:
         log('[STATEMESSAGE] ' + message)
-        if settings['channels']:
-            send(irc, 'PRIVMSG {} :{}: {}'.format(settings['channels'][0],
+        if settings['irc']['channels']:
+            send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
                                                   '[statemsg]', message))
 
     state = {'quiet': False}
     readbuffer = ''
     stack = []
     while True:
-        readbuffer += irc.read(4096).decode('utf-8', 'replace')
+        if settings['irc']['ssl']:
+            readdata = irc.read(4096)
+        else:
+            readdata = irc.recv(4096)
+        readbuffer += readdata.decode('utf-8', 'replace')
+        
         stack = readbuffer.split('\r\n')
         readbuffer = stack.pop()
         for line in stack:
@@ -198,8 +204,8 @@ def run(message, settings): # message is unused for now
                 continue
             # 2. Parse the data to a list of responses
             try:
-                responses = interpretor.main_parse(indata, settings['nick'],
-                                                   settings['command_prefix'])
+                responses = interpretor.main_parse(indata, settings['irc']['nick'],
+                                                   settings['behaviour']['command_prefix'])
             except Exception as e:
                 send_error(irc, channel, 'interpretor', e)
                 continue
