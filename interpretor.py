@@ -89,41 +89,6 @@ def giveop(msg, channel):
 
     return None
 
-def get_title(url):
-    """ Return None if it does not have a title, crash if it should have """
-    req = common.url_request(url)
-    enc = None
-    with urlopen(req) as s:
-        if s.info().get_content_type() != 'text/html':
-            return None
-        if s.info().get_content_charset() != None:
-            encoding = s.info().get_content_charset()
-        page = s.read()
-
-    # Get the encoding of the page manually if there's no header
-    if not encoding:
-        metatag_encoding = re.search(b'<meta.+?charset="?(.+?)["; ].*?>', page)
-        if metatag_encoding:
-            encoding = metatag_encoding.group(1).decode()
-    if encoding:
-        content = page.decode(encoding, 'replace')
-
-    # Fallback, in case there is no known encoding
-    else:        
-        try:
-            content = page.decode('utf-8')
-        except:
-            content = page.decode('latin-1', 'replace')
-
-    title_re = re.compile('<title.*?>(.+?)</title>', re.IGNORECASE | re.DOTALL)
-    rawtitle = title_re.search(content)
-    if rawtitle:
-        title = HTMLParser().unescape(rawtitle.group(1).strip())
-        # Get rid of unnecessary whitespace
-        return re.sub(r'\s+', ' ', title)
-    else:
-        return None
-
 def nudge_response(sendernick, msg):
     if random.randint(0,6) > 0:
         return None
@@ -259,7 +224,7 @@ def main_parse(data, myname, command_prefix):
         errors = []
         for url in set(url_re.findall(msg)):
             try:
-                title = get_title(url)
+                title = common.get_title(url)
             except Exception as e:
                 errors.append(common.error_info(url, e))
             else:
