@@ -48,13 +48,10 @@ def run_plugin(sendernick, msg, pluginname):
     else:
         return response
 
-def get_command_help(msg, sendernick, command_prefix, plugins):
-    chunks = msg.split()
+def get_command_help(msg, sendernick, myname, command_prefix, plugins):
+    chunks = msg.strip().split(None, 1)
     if len(chunks) == 1:
         return 'skriv {}help [kommando] för hjälp (lol du behöver hjälp!! ISSUE #49 KQR)'.format(command_prefix)
-    elif len(chunks) > 2:
-        # TODO: Fix this
-        return 'du svamlar för mycket'
     pluginname = chunks[1]
 
     if pluginname in plugins:
@@ -71,7 +68,19 @@ def get_command_help(msg, sendernick, command_prefix, plugins):
             except NotImplementedError:
                 return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, pluginname)
     else:
-        # TODO: commands
+        helpsplit_re = re.compile(r'\s+\?>\s+?')
+        lines = common.read_lineconf(common.read_file('commands'))
+        helplines = [x for x in lines if helpsplit_re.search(x) != None]
+        for h in helplines:
+            try:
+                cmd, args, desc = helpsplit_re.split(h)
+            except ValueError:
+                continue
+            else:
+                if pluginname == cmd.format(c=''):
+                    return ['{}: {}'.format(pluginname, desc.format(myname=myname)),
+                            'Usage: {} {}'.format(cmd.format(c=command_prefix), args).strip()]
+
         return '{}: finns inget sånt kommando'.format(sendernick)
 
 
@@ -123,12 +132,14 @@ def get_command_imports(lines):
 def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
     msg = msg.strip()
 
-    cmdsplit_re = re.compile('\s+->\s+')
+    cmdsplit_re = re.compile(r'\s+->\s+')
+    importline_re = re.compile(r'(\w|\.)+?(,\s+(\w|\.)+?)*\s*$')
+    # helpsplit_re = re.compile(r'\s+\?>\s+')
 
     lines = common.read_lineconf(common.read_file('commands'))
 
-    importlines = [x for x in lines if cmdsplit_re.search(x) == None]
-    cmdlines = [x for x in lines if x not in importlines]
+    cmdlines = [x for x in lines if cmdsplit_re.search(x) != None]
+    importlines = [x for x in lines if importline_re.match(x) != None]
 
     imports = get_command_imports(importlines)
 
@@ -144,7 +155,7 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
 
     for line in cmdlines:
         try:
-            rawcmd, rawanswer = re.split('\s+->\s+', line)
+            rawcmd, rawanswer = cmdsplit_re.split(line)
         except ValueError:
             # TODO: some good error handling here
             continue
@@ -211,7 +222,8 @@ def main_parse(data, myname, command_prefix):
 
     # .help
     elif help_re.match(msg):
-        return make_privmsgs(get_command_help(msg, sendernick, command_prefix, plugins), channel)
+        return make_privmsgs(get_command_help(msg, sendernick, myname, 
+                                   command_prefix, plugins), channel)
 
     # plugins:
     elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
