@@ -55,7 +55,7 @@ def send_error(irc, channel, desc, error):
                                    chunks[-1][1], chunks[-1][2])
     errortype = str(type(error))[8:-2]
     args = (desc, errortype, error, tb)
-    if channel:
+    if irc and channel:
         send_privmsg(irc, channel, '{}: [{}] {} - {}'.format(*args))
     else:
         log('<No channel> {}: [{}] {} - {}'.format(*args))
@@ -113,6 +113,36 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
     if cmd in ('quit', 'reconnect', 'restart'):
         return cmd
+
+    elif cmd in ('hjälp', 'help', 'commands', 'admin'):
+        send_privmsg(irc, channel, 'adminkommandon: quit, reload (inte irc.py), reconnect (onödigt), restart (allt), update config, stfu, test')
+        return 'continue'
+
+    elif cmd == 'update config':
+        try:
+            newsettings = common.read_json(common.read_file('config'))
+        except Exception as e:
+            send_error(None, None, 'update config', e)
+        else:
+            ns, os = newsettings, settings
+            if ns['irc']['server'] != os['irc']['server']\
+                or ns['irc']['port'] != os['irc']['port']\
+                or ns['irc']['ssl'] != os['irc']['ssl']:
+                return 'reconnect'
+            elif ns['irc']['channels'] != os['irc']['channels']:
+                joins = set(ns['irc']['channels']) - set(os['irc']['channels'])
+                parts = set(os['irc']['channels']) - set(ns['irc']['channels'])
+                if joins:
+                    send(irc, 'JOIN {}'.format(','.join(joins)))
+                if parts:
+                    send(irc, 'PART {}'.format(','.join(parts)))
+            elif ns == os:
+                send_privmsg(irc, channel, 'configen har inte ändrats')
+            # This should change the reference itself, not just this variable
+            settings.clear()
+            settings.update(newsettings)
+        return 'continue'
+
     elif cmd == 'reload':
         reloaded = []
         for m in (interpretor, ircparser, common):
@@ -124,6 +154,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
                 reloaded.append(m.__name__)
         send_privmsg(irc, channel, 'reloaded: {}'.format(', '.join(reloaded)))
         return 'continue'
+
     elif cmd == 'stfu':
         # Toggle state
         state['quiet'] = abs(state['quiet']-1)
@@ -133,6 +164,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
         elif not state['quiet']:
             send_privmsg(irc, channel, 'bax')
         return 'continue'
+
     elif cmd == 'test':
         send_privmsg(irc, channel, 'test')
         return 'continue'
