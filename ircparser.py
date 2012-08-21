@@ -30,6 +30,7 @@ def data_to_irc(data):
     if data['type'] == 'message':
         return 'PRIVMSG {0[channel]} :{0[message]}'.format(data)
     elif data['type'] == 'mode':
-        return 'MODE {0[channel]} {0[message]}'.format(data)
+        return 'MODE {} {} {}'.format(data['channel'], data['mode']*len(data['names']), 
+                                      ' '.join(data['names']))
     else:
         raise NotImplementedError('type {} not implemented'.format(data['type']))

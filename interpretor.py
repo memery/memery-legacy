@@ -93,9 +93,9 @@ def giveop(msg, channel, sendernick):
         if not names:
             names = [sendernick]
         return [{'type': 'mode', 
-                'message': '+o {}'.format(n), 
-                'channel': channel} 
-                for n in names]
+                'mode': '+o', 
+                'names': names,
+                'channel': channel}]
     return None
 
 
