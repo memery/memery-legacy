@@ -86,17 +86,18 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
 
 # Main functions
 
-def giveop(msg, channel):
-    names = msg.split()[1:]
+def giveop(msg, channel, sendernick):
+    names = set(msg.split()[1:])
     # Don't bother opping in query
-    if names and channel.startswith('#'):
-        return ['MODE {} +o {}'.format(channel, n)
+    if channel.startswith('#'):
+        if not names:
+            names = [sendernick]
+        return [{'type': 'mode', 
+                'message': '+o {}'.format(n), 
+                'channel': channel} 
                 for n in names]
-    elif not names and channel.startswith('#'):
-        return ['MODE {} +o {}'.format(channel, n)
-                for n in names]
-
     return None
+
 
 def nudge_response(sendernick, msg):
     if random.randint(0,6) > 0:
@@ -207,21 +208,21 @@ def main_parse(data, myname, command_prefix):
     if common.is_blacklisted(sendernick, senderident):
         return None
 
-    help_re = re.compile(r'[{}]help(\s|$)'.format(command_prefix))
+    startswith_cp = lambda msg, cmd: re.match(r'[{}]{}(\s|$)'.format(command_prefix, cmd), msg)
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
     spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
     plugins = get_plugins()
 
     # .giveop
-    if msg.startswith(command_prefix + 'giveop ') and is_admin:
-        return giveop(msg, channel)
+    if startswith_cp(msg, 'giveop') and is_admin:
+        return giveop(msg, channel, sendernick)
 
     # memery:
     elif re.match('{}.? '.format(myname), msg):
         return make_privmsgs(nudge_response(sendernick, msg), channel)
 
     # .help
-    elif help_re.match(msg):
+    elif startswith_cp(msg, 'help'):
         return make_privmsgs(get_command_help(msg, sendernick, myname, 
                                    command_prefix, plugins), channel)
 

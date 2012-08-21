@@ -29,5 +29,7 @@ def irc_to_data(line):
 def data_to_irc(data):
     if data['type'] == 'message':
         return 'PRIVMSG {0[channel]} :{0[message]}'.format(data)
+    elif data['type'] == 'mode':
+        return 'MODE {0[channel]} {0[message]}'.format(data)
     else:
         raise NotImplementedError('type {} not implemented'.format(data['type']))
