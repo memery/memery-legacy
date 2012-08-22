@@ -11,8 +11,8 @@ Config files
 
 memery uses three configuration files.
 
-* `config`. This is the only configuration file required to run.
-* `adminlist`. This is recommended, but not required.
+* `config`. This configuration file is required for memery to run.
+* `adminlist`. This configuration file is required for memery to run.
 * `userblacklist`. This is entirely optional and hopefully not needed at all.
 
 ### config
