@@ -226,7 +226,7 @@ def main_parse(data, myname, command_prefix):
 
     startswith_cp = lambda msg, cmd: re.match(r'[{}]{}(\s|$)'.format(command_prefix, cmd), msg)
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
-    spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
+    spotify_url_re = re.compile(r'spotify(:\S+)+?')
     plugins = get_plugins()
 
     # .giveop
@@ -270,9 +270,9 @@ def main_parse(data, myname, command_prefix):
     elif spotify_url_re.search(msg):
         matches = set(spotify_url_re.findall(msg))
         def titles(ms):
-            for type_, id_ in ms:
+            for m in ms:
                 try:
-                    title = get_title('http://open.spotify.com/{0}/{1}'.format(type_, id_))
+                    title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
                     formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
                     yield formatted
                 except Exception as e:
