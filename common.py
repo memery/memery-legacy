@@ -139,6 +139,11 @@ def read_lineconf(str):
 def read_json(str):
     return json.loads(str)
 
+def read_config(str):
+    conf = read_json(read_file(str))
+    conf['irc']['channels'] = set(conf['irc']['channels'])
+    return conf
+
 def truncate(str, size):
     if len(str) > size:
         return str[:size - 1] + '…'

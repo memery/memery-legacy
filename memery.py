@@ -3,7 +3,7 @@ import common, irc
 
 def main():
     # Crash like hell if the config is crap!
-    settings = common.read_json(common.read_file('config'))
+    settings = common.read_config('config')
     # Kind of like state
     message = ''
     while True:

@@ -155,7 +155,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
     elif cmd == 'update config':
         try:
-            newsettings = common.read_json(common.read_file('config'))
+            newsettings = common.read_config('config')
         except Exception as e:
             send_error(None, None, state, 'update config', e)
         else:
@@ -212,7 +212,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
 def run(message, settings): # message is unused for now
     try:
-        settings = common.read_json(common.read_file('config'))
+        settings = common.read_config('config')
     except Exception as e:
         log('Invalid config: {}'.format(e))
         # TODO: this
@@ -283,20 +283,19 @@ def run(message, settings): # message is unused for now
                 elif line.split()[1] == 'KICK':
                     state['joined_channels'].discard(channel)
                     log('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
-                    while channel in settings['irc']['channels']:
-                        settings['irc']['channels'].remove(channel)
+                    settings['irc']['channels'].discard(channel)
                     continue
 
             if line.split()[1] == '403':
                 log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
-                while channel in settings['irc']['channels']:
-                    settings['irc']['channels'].remove(channel)
+                settings['irc']['channels'].discard(channel)
                 continue
             
             if line.split()[1] == '433':
                 log('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
                 state['nick'] = new_nick(settings['irc']['nick'])
                 send(irc, 'NICK {}'.format(state['nick']))
+                continue
 
 
             # == Admin ==
@@ -353,9 +352,9 @@ def run(message, settings): # message is unused for now
             if not sent_error:
                 reset_errorstack()
 
-        if state['joined_channels'] != set(settings['irc']['channels']):
-            joins = set(settings['irc']['channels']) - state['joined_channels']
-            parts = state['joined_channels'] - set(settings['irc']['channels'])
+        if state['joined_channels'] != settings['irc']['channels']:
+            joins = settings['irc']['channels'] - state['joined_channels']
+            parts = state['joined_channels'] - settings['irc']['channels']
             if joins:
                 send(irc, 'JOIN {}'.format(','.join(joins)))
             if parts:
