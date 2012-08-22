@@ -1,7 +1,9 @@
 import json, os.path, re, traceback
+from urllib.error import URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from html.parser import HTMLParser
+from http.client import HTTPException
 
 def safeprint(text):
     try:
@@ -22,6 +24,8 @@ def error_info(desc, error):
     desc is a short description of what it was that just crashed
     error is the exception that was catched
     """
+    return {'type': 'memeryerror', 'error': error}
+    # TODO: THIS IS TEMPORARY
     exception_re = re.compile(r'File "(.+?)", line (\d+), (.+?)(\n|$)')
     try:
         stacktrace = traceback.format_exc()
@@ -94,7 +98,10 @@ def get_title(url):
     Return None if isn't an (x)html page or if it simply has no <title>-tag.
     No other exceptions/errors are handled.
     """
-    content = read_url(url, content_whitelist=['text/html'])
+    try:
+        content = read_url(url, content_whitelist=['text/html'])
+    except (URLError, HTTPException):
+        return None
     if not content:
         return None
 

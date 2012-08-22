@@ -27,7 +27,9 @@ def irc_to_data(line):
 
 
 def data_to_irc(data):
-    if data['type'] == 'message':
+    if data['type'] == 'memeryerror':
+        raise data['error']
+    elif data['type'] == 'message':
         return 'PRIVMSG {0[channel]} :{0[message]}'.format(data)
     elif data['type'] == 'mode':
         return 'MODE {} {} {}'.format(data['channel'], data['mode']*len(data['names']), 

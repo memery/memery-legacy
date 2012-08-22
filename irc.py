@@ -39,7 +39,7 @@ def quit(irc):
     irc.close()
 
 
-def send_error(irc, channel, desc, error):
+def send_error(irc, channel, state, desc, error):
     exception_re = re.compile(r'File "(.+?)", line (\d+), (.+?)(\n|$)')
     try:
         stacktrace = traceback.format_exc()
@@ -54,11 +54,27 @@ def send_error(irc, channel, desc, error):
             tb = '{}:{} {}'.format(os.path.basename(chunks[-1][0]),
                                    chunks[-1][1], chunks[-1][2])
     errortype = str(type(error))[8:-2]
-    args = (desc, errortype, error, tb)
-    if irc and channel:
-        send_privmsg(irc, channel, '{}: [{}] {} - {}'.format(*args))
+    ircmsg = '{}: [{}] {} - {}'.format(desc, errortype, error, tb)
+
+    autostfu = True
+
+    # Autostfu in case of errorspam
+    if state['error_repetitions'] < state['error_printcap']:
+        if state['error_latest'] in ('', ircmsg):
+            state['error_repetitions'] += 1
+        else:
+            state['error_repetitions'] = 1
+        state['error_latest'] = ircmsg
+        autostfu = False
+    elif state['error_latest'] != ircmsg:
+        state['error_latest'] = ircmsg
+        state['error_repetitions'] = state['error_printcap']
+        autostfu = False        
+
+    if irc and channel and not autostfu:
+        send_privmsg(irc, channel, ircmsg)
     else:
-        log('<No channel> {}: [{}] {} - {}'.format(*args))
+        log('<No channel> {}'.format(ircmsg))
 
 
 def is_admin(sender):
@@ -183,6 +199,15 @@ def run(message, settings): # message is unused for now
         # TODO: this
         pass
 
+    state = {'quiet': False, 
+             'error_latest': '', 
+             'error_repetitions': 0, 
+             'error_printcap': 2}
+
+    def reset_errorstack():
+        state['error_repetitions'] = 0
+        state['error_latest'] = ''
+
     irc = init_irc(settings)
 
     if message:
@@ -190,8 +215,6 @@ def run(message, settings): # message is unused for now
         if settings['irc']['channels']:
             send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
                                                   '[statemsg]', message))
-
-    state = {'quiet': False}
     readbuffer = ''
     stack = []
     while True:
@@ -215,9 +238,11 @@ def run(message, settings): # message is unused for now
             try:
                 admin_action = exec_admin_cmd(irc, line, channel, settings, state)
             except Exception as e:
-                send_error(irc, channel, 'admincmd', e)
+                send_error(irc, channel, state, 'admincmd', e)
             else:
                 if admin_action == 'continue':
+                    state['error_repetitions'] = 0
+                    state['error_latest'] = ''
                     continue
                 elif admin_action != None:
                     quit(irc)
@@ -233,23 +258,33 @@ def run(message, settings): # message is unused for now
             except NotImplementedError:
                 continue
             except Exception as e:
-                send_error(irc, channel, 'irc->data', e)
+                send_error(irc, channel, state, 'irc->data', e)
                 continue
+
             # 2. Parse the data to a list of responses
             try:
                 responses = interpretor.main_parse(indata, settings['irc']['nick'],
                                                    settings['behaviour']['command_prefix'])
             except Exception as e:
-                send_error(irc, channel, 'interpretor', e)
+                send_error(irc, channel, state, 'interpretor', e)
                 continue
             # Nothing to do if there are no responses
             if not responses:
+                reset_errorstack()
                 continue
+
             # 3. Convert the list of responses to list of raw send()able irc messages
+            sent_error = False
             for response in responses:
                 try:
                     outmessage = ircparser.data_to_irc(response)
                 except Exception as e:
-                    send_error(irc, channel, 'data->irc', e)
+                    send_error(irc, channel, state, 'data->irc', e)
+                    sent_error = True
                 else:
                     send(irc, outmessage)
+                    sent_error = False
+
+            if not sent_error:
+                reset_errorstack()
+

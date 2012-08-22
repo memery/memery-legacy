@@ -9,8 +9,16 @@ import common
 def make_privmsgs(texts, channel):
     if type(texts) != type([]):
         texts = [texts]
-    return [{'type': 'message', 'message': t, 'channel': channel}
-            for t in texts if t]
+    out = []
+    for t in texts:
+        if t:
+            if type(t) == type({}):
+                out.append(t)
+            else:
+                out.append({'type': 'message', 'message': t, 'channel': channel})
+    return out
+    # return [{'type': 'message', 'message': t, 'channel': channel}
+    #         for t in texts if t]
 
 
 # Plugins
@@ -93,9 +101,9 @@ def giveop(msg, channel, sendernick):
         if not names:
             names = [sendernick]
         return [{'type': 'mode', 
-                'mode': '+o', 
-                'names': names,
-                'channel': channel}]
+                 'mode': '+o', 
+                 'names': names,
+                 'channel': channel}]
     return None
 
 
@@ -212,6 +220,11 @@ def main_parse(data, myname, command_prefix):
     url_re = re.compile(r'https?://\S+') #(www[.]\S+?[.]\S+)
     spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
     plugins = get_plugins()
+
+    if msg == 'arst':
+        x = 1/0
+    elif msg == 'huhu':
+        raise Exception
 
     # .giveop
     if startswith_cp(msg, 'giveop') and is_admin:
