@@ -11,8 +11,8 @@ Config files
 
 memery uses three configuration files.
 
-* `config`. This is the only configuration file required to run.
-* `adminlist`. This is recommended, but not required.
+* `config`. This configuration file is required for memery to run.
+* `adminlist`. This configuration file is required for memery to run.
 * `userblacklist`. This is entirely optional and hopefully not needed at all.
 
 ### config
@@ -30,6 +30,13 @@ unused. memery will not be able to connect with an occupied nick.
 * `server`: The server memery will connect to.
 * `port`: The port memery will connect to.
 * `ssl`: Whether or not memery should connect using SSL.
+* `reconnect_delay`: Whenever memery fails connecting to a server, she will
+retry over and over. How often she retries is specified by this setting,
+in seconds.
+* `grace_period`: When memery stops receiving messages from the server for
+the number of seconds specified by this setting, she will attempt to contact
+the server herself. If she fails to receive anything for an extended period
+of time, she will attempt to reconnect to the server.
 * `command_prefix`: Most commands are executed with something like `!ping`
 or `.ping` or `@ping` or perhaps even `command: ping`. This setting dictates
 the leading character sequence that will identify a command.
