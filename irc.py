@@ -161,8 +161,10 @@ def exec_admin_cmd(irc, line, channel, settings, state):
         # TODO: toggle away
         if state['quiet']:
             send_privmsg(irc, channel, 'afk')
+            send(irc, 'AWAY stfu\'d')
         elif not state['quiet']:
             send_privmsg(irc, channel, 'bax')
+            send(irc, 'AWAY')
         return 'continue'
 
     elif cmd == 'test':
