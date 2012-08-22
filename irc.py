@@ -152,7 +152,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
         try:
             newsettings = common.read_json(common.read_file('config'))
         except Exception as e:
-            send_error(None, None, 'update config', e)
+            send_error(None, None, state, 'update config', e)
         else:
             ns, os = newsettings, settings
             if ns['irc']['server'] != os['irc']['server']\
@@ -174,7 +174,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
             try:
                 reload(m)
             except Exception as e:
-                send_error(irc, chunks[2], m.__name__, e)
+                send_error(irc, chunks[2], state, m.__name__, e)
             else:
                 reloaded.append(m.__name__)
         send_privmsg(irc, channel, 'reloaded: {}'.format(', '.join(reloaded)))

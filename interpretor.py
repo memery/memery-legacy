@@ -34,12 +34,14 @@ def load_plugin(pluginname):
 
 def run_plugin(sendernick, msg, pluginname):
     # Get the argument(s)
-    msgchunks = msg.split(None, 1)
-    if len(msgchunks) > 1:
-        args = msgchunks[1]
+    msgparts = re.match(r'\S+(\s+(?P<nudgenick>@\S+)?\s*(?P<args>.+)*)?', msg)
+    if msgparts.group('nudgenick'):
+        sendernick = msgparts.group('nudgenick')[1:]
+    if msgparts.group('args'):
+        args = msgparts.group('args')
     else:
         args = ''
-
+    
     # Load the plugin
     try:
         plugin = load_plugin(pluginname)
@@ -57,10 +59,14 @@ def run_plugin(sendernick, msg, pluginname):
         return response
 
 def get_command_help(msg, sendernick, myname, command_prefix, plugins):
-    chunks = msg.strip().split(None, 1)
-    if len(chunks) == 1:
+    msgparts = re.match(r'{}help(\s+(?P<nudgenick>@\S+)?\s*(?P<args>.+)*)?'.format(command_prefix), msg)
+    if msgparts.group('args') == None:
         return 'skriv {}help [kommando] för hjälp (lol du behöver hjälp!! ISSUE #49 KQR)'.format(command_prefix)
-    pluginname = chunks[1]
+    pluginname = msgparts.group('args')
+    if msgparts.group('nudgenick'):
+        nudgenick = msgparts.group('nudgenick')[1:]
+    else:
+        nudgenick = sendernick
 
     if pluginname in plugins:
         try:
@@ -70,11 +76,12 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
         else:
             try:
                 info = plugin.help()
-                return ['{}: {}'.format(pluginname, info['description']),
-                        'Usage: {}{} {}'.format(command_prefix, pluginname, 
-                                                info['argument'])]
+                return ['{}: {}: {}'.format(nudgenick, pluginname, info['description']),
+                        '{}: Usage: {}{} {}'.format(nudgenick, command_prefix, pluginname, 
+                                                    info['argument'])]
             except NotImplementedError:
-                return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, pluginname)
+                return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, 
+                                        pluginname)
     else:
         helpsplit_re = re.compile(r'\s+\?>\s+?')
         lines = common.read_lineconf(common.read_file('commands'))
@@ -86,8 +93,9 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
                 continue
             else:
                 if pluginname == cmd.format(c=''):
-                    return ['{}: {}'.format(pluginname, desc.format(myname=myname)),
-                            'Usage: {} {}'.format(cmd.format(c=command_prefix), args).strip()]
+                    return ['{}: {}: {}'.format(nudgenick, pluginname, desc.format(myname=myname)),
+                            '{}: Usage: {} {}'.format(nudgenick, cmd.format(c=command_prefix), 
+                                                      args).strip()]
 
         return '{}: finns inget sånt kommando'.format(sendernick)
 
