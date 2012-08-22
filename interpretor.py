@@ -221,11 +221,6 @@ def main_parse(data, myname, command_prefix):
     spotify_url_re = re.compile(r'spotify:([a-z]+?):(\S+)')
     plugins = get_plugins()
 
-    if msg == 'arst':
-        x = 1/0
-    elif msg == 'huhu':
-        raise Exception
-
     # .giveop
     if startswith_cp(msg, 'giveop') and is_admin:
         return giveop(msg, channel, sendernick)
