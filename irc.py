@@ -242,19 +242,19 @@ def run(message, settings): # message is unused for now
             channel = get_channel(line, settings)
 
             # == State keeping ==
-            event = line.split()[1]
-            if line.split()[1] == 'JOIN':
-                joined_channels.add(channel)
-                continue
-            elif line.split()[1] == 'PART':
-                joined_channels.discard(channel)
-                continue
-            elif line.split()[1] == 'KICK':
-                joined_channels.discard(channel)
-                log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
-                while channel in settings['irc']['channels']:
-                    settings['irc']['channels'].remove(channel)
-                continue
+            if line.startswith(':{}!'.format(settings['irc']['nick'])):
+                if line.split()[1] == 'JOIN':
+                    joined_channels.add(channel)
+                    continue
+                elif line.split()[1] == 'PART':
+                    joined_channels.discard(channel)
+                    continue
+                elif line.split()[1] == 'KICK':
+                    joined_channels.discard(channel)
+                    log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
+                    while channel in settings['irc']['channels']:
+                        settings['irc']['channels'].remove(channel)
+                    continue
 
             if line.split()[1] == '403':
                 log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
