@@ -34,7 +34,7 @@ unused. memery will not be able to connect with an occupied nick.
 retry over and over. How often she retries is specified by this setting,
 in seconds.
 * `grace_period`: When memery stops receiving messages from the server for
-the number of seconds specified by this server, she will attempt to contact
+the number of seconds specified by this setting, she will attempt to contact
 the server herself. If she fails to receive anything for an extended period
 of time, she will attempt to reconnect to the server.
 * `command_prefix`: Most commands are executed with something like `!ping`
