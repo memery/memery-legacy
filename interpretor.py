@@ -59,7 +59,7 @@ def run_plugin(sendernick, msg, pluginname):
         return response
 
 def get_command_help(msg, sendernick, myname, command_prefix, plugins):
-    msgparts = re.match(r'{}help(\s+(?P<nudgenick>@\S+)?\s*(?P<args>.+)*)?'.format(command_prefix), msg)
+    msgparts = re.match(r'[{}]help(\s+(?P<nudgenick>@\S+)?\s*(?P<args>.+)*)?'.format(command_prefix), msg)
     if msgparts.group('args') == None:
         return 'skriv {}help [kommando] för hjälp (lol du behöver hjälp!! ISSUE #49 KQR)'.format(command_prefix)
     pluginname = msgparts.group('args')
@@ -162,7 +162,7 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
 
     format_answer = lambda t, arg: t.format(message=msg, myname=myname,
                      channel=channel, sender=sender, arg=arg, qarg=quote(arg),
-                     c=command_prefix)
+                     c='['+command_prefix+']')
     exec_answer = lambda code, arg: eval(code, imports, 
                     {'arg':arg, 'qarg':quote(arg), 'message':msg,
                      'sender':sender, 'channel':channel, 'myname':myname})
