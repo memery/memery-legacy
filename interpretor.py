@@ -61,7 +61,9 @@ def run_plugin(sendernick, msg, pluginname):
 def get_command_help(msg, sendernick, myname, command_prefix, plugins):
     msgparts = re.match(r'[{}]help(\s+(?P<nudgenick>@\S+)?\s*(?P<args>.+)*)?'.format(command_prefix), msg)
     if msgparts.group('args') == None:
-        return 'skriv {}help [kommando] för hjälp (lol du behöver hjälp!! ISSUE #49 KQR)'.format(command_prefix)
+        return ['{}: Hej Och Välkommen Till {}, En Vänlig Och Hjälpsam IRC (InterNet Relay Chat) "Bot"!'.format(sendernick, myname.title()),
+                '{0}: Skriv \'{1}list commands\' eller \'{1}list plugins\' för en lista på kommandon/plugins'.format(sendernick, command_prefix),
+                '{}: Skriv \'{}help <kommando>\' för hjälp med <kommando>.'.format(sendernick, command_prefix)]
     pluginname = msgparts.group('args')
     if msgparts.group('nudgenick'):
         nudgenick = msgparts.group('nudgenick')[1:]
