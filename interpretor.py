@@ -168,7 +168,7 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
                      'sender':sender, 'channel':channel, 'myname':myname})
 
     # Fancy regexmagic!
-    format_cmd = lambda t: format_answer(t, '(.+?)') + '$'
+    format_cmd = lambda t: format_answer(t, r'(?P<arg>.+?)') + '$'
 
     for line in cmdlines:
         try:
@@ -179,8 +179,8 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
         cmd = format_cmd(rawcmd)
         cmd_match = re.match(cmd, msg) # ugly poc name but w/e :/
         if cmd_match:
-            if len(cmd_match.groups()) > 0:
-                arg = cmd_match.group(1)
+            if 'arg' in cmd_match.groupdict():
+                arg = cmd_match.group('arg')
             else:
                 arg = ''
             if rawanswer.startswith('#py:'):
