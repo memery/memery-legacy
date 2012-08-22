@@ -1,11 +1,23 @@
 from imp import reload
 import os.path, re, socket, ssl, traceback
 import common, ircparser, interpretor
+from time import time, sleep
 
 
 def init_irc(settings):
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    irc.connect((settings['irc']['server'], settings['irc']['port']))
+    irc.settimeout(settings['irc']['grace_period']/10)
+    while True:
+        try: irc.connect((settings['irc']['server'], settings['irc']['port']))
+        except:
+            try: irc.send(bytes('', 'utf-8'))
+            except:
+                log('Connecting to {}:{} failed, trying again in {} seconds...'.format(settings['irc']['server'],
+                                                                                       settings['irc']['port'],
+                                                                                       settings['irc']['reconnect_delay']))
+                sleep(settings['irc']['reconnect_delay'])
+            else: break
+        else: break
     if settings['irc']['ssl']:
         irc = ssl.wrap_socket(irc)
 
@@ -193,19 +205,36 @@ def run(message, settings): # message is unused for now
             send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
                                                   '[statemsg]', message))
 
+    lastmsg = time()
+    pinged = False
+
     state = {'quiet': False}
     readbuffer = ''
     stack = []
     while True:
-        if settings['irc']['ssl']:
-            readdata = irc.read(4096)
+        if time() - lastmsg > settings['irc']['grace_period'] and not pinged:
+            send(irc, 'PING :arst')
+            pinged = True
+        elif time() - lastmsg > settings['irc']['grace_period']*1.5:
+            quit(irc)
+            return 'reconnect'
+
+        try:
+            if settings['irc']['ssl']:
+                readdata = irc.read(4096)
+            else:
+                readdata = irc.recv(4096)
+        except socket.timeout:
+            continue
         else:
-            readdata = irc.recv(4096)
-        readbuffer += readdata.decode('utf-8', 'replace')
+            readbuffer += readdata.decode('utf-8', 'replace')
         
         stack = readbuffer.split('\r\n')
         readbuffer = stack.pop()
         for line in stack:
+            lastmsg = time()
+            pinged = False
+
             log_input(line)
             if line.startswith('PING'):
                 send(irc, 'PONG ' + line.split()[1])

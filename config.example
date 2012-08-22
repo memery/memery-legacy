@@ -5,6 +5,8 @@
     "server": "irc.efnet.org",
     "port": 6669,
     "ssl": false
+    "reconnect_delay": 30,
+    "grace_period": 240
   },
 
   "behaviour": {
