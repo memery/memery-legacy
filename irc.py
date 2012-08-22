@@ -7,6 +7,7 @@ from time import time, sleep
 def init_irc(settings):
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc.settimeout(settings['irc']['grace_period']/10)
+
     while True:
         try: irc.connect((settings['irc']['server'], settings['irc']['port']))
         except:
@@ -18,13 +19,12 @@ def init_irc(settings):
                 sleep(settings['irc']['reconnect_delay'])
             else: break
         else: break
+
     if settings['irc']['ssl']:
         irc = ssl.wrap_socket(irc)
 
     send(irc, 'NICK {}'.format(settings['irc']['nick']))
     send(irc, 'USER {0} 0 * :{0}'.format(settings['irc']['nick']))
-    for channel in settings['irc']['channels']:
-        send(irc, 'JOIN {}'.format(channel))
     return irc
 
 def log(text):
@@ -94,13 +94,15 @@ def is_admin(sender):
 def get_channel(line, settings):
     chunks = line.split()
     try:        
-        if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE'):
-            return chunks[2]
+        if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE', 'PART'):
+            return chunks[2][1:] if chunks[2][0] == ':' else chunks[2]
         elif chunks[1] == 'PRIVMSG':
             if chunks[2] == settings['irc']['nick']:
                 return chunks[0][1:]
             else:
                 return chunks[2]
+        elif chunks[1] == '403':
+            return chunks[3]
     except IndexError:
         print('get_channel index error!') #TODO: remove this
         return None
@@ -142,12 +144,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
                 or ns['irc']['ssl'] != os['irc']['ssl']:
                 return 'reconnect'
             elif ns['irc']['channels'] != os['irc']['channels']:
-                joins = set(ns['irc']['channels']) - set(os['irc']['channels'])
-                parts = set(os['irc']['channels']) - set(ns['irc']['channels'])
-                if joins:
-                    send(irc, 'JOIN {}'.format(','.join(joins)))
-                if parts:
-                    send(irc, 'PART {}'.format(','.join(parts)))
+                pass # handled elsewhere
             elif ns == os:
                 send_privmsg(irc, channel, 'configen har inte ändrats')
             # This should change the reference itself, not just this variable
@@ -208,6 +205,8 @@ def run(message, settings): # message is unused for now
     lastmsg = time()
     pinged = False
 
+    joined_channels = set()
+
     state = {'quiet': False}
     readbuffer = ''
     stack = []
@@ -241,6 +240,27 @@ def run(message, settings): # message is unused for now
                 continue
 
             channel = get_channel(line, settings)
+
+            # == State keeping ==
+            event = line.split()[1]
+            if line.split()[1] == 'JOIN':
+                joined_channels.add(channel)
+                continue
+            elif line.split()[1] == 'PART':
+                joined_channels.discard(channel)
+                continue
+            elif line.split()[1] == 'KICK':
+                joined_channels.discard(channel)
+                log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
+                while channel in settings['irc']['channels']:
+                    settings['irc']['channels'].remove(channel)
+                continue
+
+            if line.split()[1] == '403':
+                log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
+                while channel in settings['irc']['channels']:
+                    settings['irc']['channels'].remove(channel)
+                continue
 
             # == Admin ==
             try:
@@ -284,3 +304,13 @@ def run(message, settings): # message is unused for now
                     send_error(irc, channel, 'data->irc', e)
                 else:
                     send(irc, outmessage)
+
+        if joined_channels != set(settings['irc']['channels']):
+            joins = set(settings['irc']['channels']) - joined_channels
+            parts = joined_channels - set(settings['irc']['channels'])
+            if joins:
+                send(irc, 'JOIN {}'.format(','.join(joins)))
+            if parts:
+                send(irc, 'PART {}'.format(','.join(parts)))
+            
+
