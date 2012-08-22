@@ -2,6 +2,7 @@ from imp import reload
 import os.path, re, socket, ssl, traceback
 import common, ircparser, interpretor
 from time import time, sleep
+import random, string
 
 
 def init_irc(settings):
@@ -24,7 +25,7 @@ def init_irc(settings):
         irc = ssl.wrap_socket(irc)
 
     send(irc, 'NICK {}'.format(settings['irc']['nick']))
-    send(irc, 'USER {0} 0 * :{0}'.format(settings['irc']['nick']))
+    send(irc, 'USER {0} 0 * :IRC bot {0}'.format(settings['irc']['nick']))
     return irc
 
 def log(text):
@@ -38,6 +39,10 @@ def log_input(text):
 
 def log_output(text):
     log('<< ' + text)
+
+def new_nick(nick):
+    nick = nick[:min(len(nick), 6)] # determine how much to shave off to make room for random chars
+    return '{}_{}'.format(nick, ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(2)))
 
 def send(irc, text):
     irc.send(bytes(text + '\r\n', 'utf-8'))
@@ -107,13 +112,13 @@ def is_admin(sender):
                 return True
         return False
 
-def get_channel(line, settings):
+def get_channel(line, settings, state):
     chunks = line.split()
     try:        
         if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE', 'PART'):
             return chunks[2][1:] if chunks[2][0] == ':' else chunks[2]
         elif chunks[1] == 'PRIVMSG':
-            if chunks[2] == settings['irc']['nick']:
+            if chunks[2] == state['nick']:
                 return chunks[0][1:]
             else:
                 return chunks[2]
@@ -132,7 +137,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
     if chunks[1] != 'PRIVMSG' or not channel:
         return
     # Is someone talking to me?
-    rawcmd = re.match(r':{}[,:]\s+?(.+)'.format(settings['irc']['nick']), chunks[3])
+    rawcmd = re.match(r':{}[,:]\s+?(.+)'.format(state['nick']), chunks[3])
     if rawcmd == None:
         return
     # Make sure its an admin who's talking
@@ -159,6 +164,9 @@ def exec_admin_cmd(irc, line, channel, settings, state):
                 or ns['irc']['port'] != os['irc']['port']\
                 or ns['irc']['ssl'] != os['irc']['ssl']:
                 return 'reconnect'
+            elif ns['irc']['nick'] != os['irc']['nick']:
+                send(irc, 'NICK {}'.format(ns['irc']['nick']))
+                state['nick'] = ns['irc']['nick']
             elif ns['irc']['channels'] != os['irc']['channels']:
                 pass # handled elsewhere
             elif ns == os:
@@ -213,7 +221,11 @@ def run(message, settings): # message is unused for now
     state = {'quiet': False, 
              'error_latest': '', 
              'error_repetitions': 0, 
-             'error_printcap': 2}
+             'error_printcap': 2,
+             'joined_channels': set(),
+             'lastmsg': time(),
+             'pinged': False,
+             'nick': settings['irc']['nick']}
 
     def reset_errorstack():
         state['error_repetitions'] = 0
@@ -227,18 +239,13 @@ def run(message, settings): # message is unused for now
             send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
                                                   '[statemsg]', message))
 
-    lastmsg = time()
-    pinged = False
-
-    joined_channels = set()
-
     readbuffer = ''
     stack = []
     while True:
-        if time() - lastmsg > settings['irc']['grace_period'] and not pinged:
+        if time() - state['lastmsg'] > settings['irc']['grace_period'] and not state['pinged']:
             send(irc, 'PING :arst')
-            pinged = True
-        elif time() - lastmsg > settings['irc']['grace_period']*1.5:
+            state['pinged'] = True
+        elif time() - state['lastmsg'] > settings['irc']['grace_period']*1.5:
             quit(irc)
             return 'reconnect'
 
@@ -255,27 +262,27 @@ def run(message, settings): # message is unused for now
         stack = readbuffer.split('\r\n')
         readbuffer = stack.pop()
         for line in stack:
-            lastmsg = time()
-            pinged = False
+            state['lastmsg'] = time()
+            state['pinged'] = False
 
             log_input(line)
             if line.startswith('PING'):
                 send(irc, 'PONG ' + line.split()[1])
                 continue
 
-            channel = get_channel(line, settings)
+            channel = get_channel(line, settings, state)
 
             # == State keeping ==
-            if line.startswith(':{}!'.format(settings['irc']['nick'])):
+            if line.startswith(':{}!'.format(state['nick'])):
                 if line.split()[1] == 'JOIN':
-                    joined_channels.add(channel)
+                    state['joined_channels'].add(channel)
                     continue
                 elif line.split()[1] == 'PART':
-                    joined_channels.discard(channel)
+                    state['joined_channels'].discard(channel)
                     continue
                 elif line.split()[1] == 'KICK':
-                    joined_channels.discard(channel)
-                    log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
+                    state['joined_channels'].discard(channel)
+                    log('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
                     while channel in settings['irc']['channels']:
                         settings['irc']['channels'].remove(channel)
                     continue
@@ -285,6 +292,12 @@ def run(message, settings): # message is unused for now
                 while channel in settings['irc']['channels']:
                     settings['irc']['channels'].remove(channel)
                 continue
+            
+            if line.split()[1] == '433':
+                log('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
+                state['nick'] = new_nick(settings['irc']['nick'])
+                send(irc, 'NICK {}'.format(state['nick']))
+
 
             # == Admin ==
             try:
@@ -315,7 +328,7 @@ def run(message, settings): # message is unused for now
 
             # 2. Parse the data to a list of responses
             try:
-                responses = interpretor.main_parse(indata, settings['irc']['nick'],
+                responses = interpretor.main_parse(indata, state['nick'],
                                                    settings['behaviour']['command_prefix'])
             except Exception as e:
                 send_error(irc, channel, state, 'interpretor', e)
@@ -340,9 +353,9 @@ def run(message, settings): # message is unused for now
             if not sent_error:
                 reset_errorstack()
 
-        if joined_channels != set(settings['irc']['channels']):
-            joins = set(settings['irc']['channels']) - joined_channels
-            parts = joined_channels - set(settings['irc']['channels'])
+        if state['joined_channels'] != set(settings['irc']['channels']):
+            joins = set(settings['irc']['channels']) - state['joined_channels']
+            parts = state['joined_channels'] - set(settings['irc']['channels'])
             if joins:
                 send(irc, 'JOIN {}'.format(','.join(joins)))
             if parts:
