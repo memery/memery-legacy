@@ -12,7 +12,7 @@ def help():
           'argument':    '<last.fm user name>'}
 
 def run(nick, args):
-  return "{0}".format(lastfm(args))
+  return "{}: {}".format(nick, lastfm(args))
 
 def lastfm(args):
   try:
