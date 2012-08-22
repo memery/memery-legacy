@@ -10,7 +10,7 @@ def init_irc(settings):
         irc = ssl.wrap_socket(irc)
 
     send(irc, 'NICK {}'.format(settings['irc']['nick']))
-    send(irc, 'USER {0} {0} {0} :{0}'.format(settings['irc']['nick']))
+    send(irc, 'USER {0} 0 * :{0}'.format(settings['irc']['nick']))
     for channel in settings['irc']['channels']:
         send(irc, 'JOIN {}'.format(channel))
     return irc
