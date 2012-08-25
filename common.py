@@ -5,6 +5,8 @@ from urllib.request import Request, urlopen
 from html.parser import HTMLParser
 from http.client import HTTPException
 
+unescape_html = HTMLParser().unescape
+
 def safeprint(text):
     try:
         print(text)
@@ -108,7 +110,7 @@ def get_title(url):
     title_re = re.compile('<title.*?>(.+?)</title>', re.IGNORECASE | re.DOTALL)
     rawtitle = title_re.search(content)
     if rawtitle:
-        title = HTMLParser().unescape(rawtitle.group(1).strip())
+        title = unescape_html(rawtitle.group(1).strip())
         # Get rid of unnecessary whitespace
         return re.sub(r'\s+', ' ', title)
     else:
