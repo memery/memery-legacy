@@ -275,8 +275,9 @@ def main_parse(data, myname, command_prefix):
             for m in ms:
                 try:
                     title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
-                    formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
-                    yield formatted
+                    if title:
+                        formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
+                        yield formatted
                 except Exception as e:
                     yield common.error_info('Spotify error', e)
         spotify_titles = [t for t in titles(matches)]    # coerce generator to list
