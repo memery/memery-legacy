@@ -13,13 +13,15 @@ def run(nick, args):
     number_re = re.compile(r'\s*(\d+)\s*')
     url_re = re.compile(r'\s*(http://xkcd\.com/\d+/)\s*')
 
-    if number_re.match(args):
+    if not args.strip():
+        return '{}: skriv ett nummer, sökord eller en url'.format(nick)
+    elif number_re.match(args):
         return xkcd_info('http://xkcd.com/{}/'.format(number_re.match(args).group(1)), nick)
     elif url_re.match(args):
         return xkcd_info(url_re.match(args).group(1), nick)
     else:
         url = xkcd_search(args)
-        if url:
+        if url and url_re.match(url):
             return xkcd_info(url, nick)
         else:
             return '{}: hittar ingen xkcd som passar din sökning!'.format(nick)
