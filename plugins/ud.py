@@ -23,12 +23,11 @@ def search(args, nick):
     result = "No hits. ({0})".format(url)
   else:
     def fixhtml(str):
-      str = re.sub(r'&amp;', r'&', str)
-      str = re.sub(r'&quot;', r'"', str)
       str = re.sub(r'(<br ?/>)+', r' ', str)
       str = re.sub('\n', r' ', str)
       str = re.sub('\r', r' ', str)
-      return re.sub(r'(<.+?>)+', r'', str)
+      str = re.sub(r'(<.+?>)+', r'', str)
+      return common.unescape_html(str)
 
     # magic constants used when calculating space_left:
     #   * 450 -- the smallest length of an irc message (hopefully; depends on server.)
