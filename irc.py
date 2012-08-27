@@ -45,10 +45,16 @@ def new_nick(nick):
     return '{}_{}'.format(nick, ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(2)))
 
 def send(irc, text):
-    irc.send(bytes(text + '\r\n', 'utf-8'))
-    log_output(text)
+    # Sanitize the text
+    if '\r' in text or '\n' in text:
+        log_output('[ROGUE NEWLINES: (this was not sent)] {}'.format(repr(text)))
+    else:
+        irc.send(bytes(text + '\r\n', 'utf-8'))
+        log_output(text)
 
 def send_privmsg(irc, channel, msg):
+    if '\r' in msg or '\n' in msg:
+        msg = '[rogue newlines:] {}'.format(repr(msg))
     send(irc, 'PRIVMSG {} :{}'.format(channel, msg))
 
 def quit(irc):
@@ -347,7 +353,6 @@ def run(message, settings): # message is unused for now
             if len(responses) > 5:
                 send_privmsg(irc, channel, 'fler än fem rader från interpretor ({} st rader), kickad för flooding är inte ok'.format(len(responses)))
                 responses = responses[:4]
-
 
             for response in responses:
                 try:
