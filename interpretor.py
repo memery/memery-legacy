@@ -194,16 +194,27 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
             
     return None
 
-def random_talk(sendernick, msg):
-    if random.randint(0,2300) > 0 or len(msg) > 40:
+def markov_talk(channel):
+    if random.randint(0,100) > 0:
         return None
-    choices = ['{msg} :)', '{msg}', '{msg}?',
-               '...', 'uh', 'ok', 'va?',
-               'precis', 'mm', 'exakt',
-               'knappast', 'nej', 'du har fel',
-               '{nick}: ?', '{nick}',
-               'men', 'bah', 'pff', 'hm']
-    return random.choice(choices).format(msg=msg, nick=sendernick)
+    try:
+        with open('markovdata/{}.txt'.format(channel), 'r') as f:
+            corpus = f.read()
+    except:
+        return None
+
+    sentence = random.choice(corpus.splitlines()).split()[:2]
+
+    while True:
+        ms = re.findall(r'\b{} (.+?$)'.format(re.escape(' '.join(sentence[-2:]))), corpus, re.MULTILINE)
+        if not ms:
+            break
+        nextword = random.choice(ms).split()[:1]
+        if not nextword:
+            break
+        sentence += nextword
+
+    return [' '.join(sentence)]
 
 
 # Entry point
@@ -290,7 +301,16 @@ def main_parse(data, myname, command_prefix):
         output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
             return make_privmsgs(output, channel)
+
+        # markov chain-style talking
         else:
-            remarks = random_talk(sendernick, msg)
+            try: os.makedirs('markovdata')
+            except: pass
+            with open('markovdata/{}.txt'.format(channel), 'a') as f:
+                f.write('{}\n'.format(msg))
+            remarks = markov_talk(channel)
             if remarks:
                 return make_privmsgs(remarks, channel)
+
+
+

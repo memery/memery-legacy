@@ -32,6 +32,9 @@ adminlist
 config
 o-blacklist
 
+# markov logs
+markovdata
+
 # plugin specific
 lastfm-api-key
 
