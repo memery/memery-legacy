@@ -122,7 +122,8 @@ def nudge_response(sendernick, msg):
         return None
     l = ['{}: MEN DU ÄR JU DUM I HUVUDET',
          '{}: det kanske är du som gör fel?',
-         '{}: aa fast nej']
+         '{}: aa fast nej',
+         '{}: troru det själv eller']
     return random.choice(l).format(sendernick)
 
 def get_command_imports(lines):

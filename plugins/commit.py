@@ -6,11 +6,11 @@ def help():
   return {'authors':     ['kqr'],
           'years':       ['2012'],
           'version':     '1.0',
-          'description': 'Generates bad commit messages via http://whatthecommit.com/.',
+          'description': 'Generar dåliga commitmeddelanden via http://whatthecommit.com/.',
           'argument':    ''}
 
 def run(nick, args):
-  return "Don't know what to write in your commit message? Why not: \"{0}\"".format(commit())
+  return "Vet du inte vad du ska skriva i ditt commitmeddelande? Varför inte: \"{0}\"".format(commit())
 
 def commit():
   request = common.url_request("http://whatthecommit.com")

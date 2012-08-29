@@ -6,8 +6,8 @@ def help():
     return {'authors':     ['kqr'],
             'years':       ['2012'],
             'version':     '1.2',
-            'description': 'Interface to Google via some kind of ajax json API.',
-            'argument':    '<google query>'}
+            'description': 'Interface till Google via något slags ajax json API.',
+            'argument':    '<googlesökning>'}
 
 def run(nick, args):
     return "{0}: {1}".format(nick, search(args))

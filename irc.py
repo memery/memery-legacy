@@ -14,9 +14,10 @@ def init_irc(settings):
         except:
             try: irc.send(bytes('', 'utf-8'))
             except:
-                log('Connecting to {}:{} failed, trying again in {} seconds...'.format(settings['irc']['server'],
-                                                                                       settings['irc']['port'],
-                                                                                       settings['irc']['reconnect_delay']))
+                log('Uppkoppling till {}:{} misslyckades, försöker igen om {} sekunder...'.format(
+                    settings['irc']['server'],
+                    settings['irc']['port'],
+                    settings['irc']['reconnect_delay']))
                 sleep(settings['irc']['reconnect_delay'])
             else: break
         else: break

@@ -5,8 +5,8 @@ def help():
   return {'authors':     ['nycz', 'jocke-l'],
           'years':       ['2012'],
           'version':     '1.0',
-          'description': 'Executes a piece of haskell code.',
-          'argument':    '<valid haskell code>'}
+          'description': 'Exekverar Haskellkod.',
+          'argument':    '<giltig Haskellkod>'}
 
 def run(nick, args):
   return re.sub('\s+', ' ', haskell(args))

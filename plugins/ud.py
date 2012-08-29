@@ -5,7 +5,7 @@ def help():
   return {'authors':     ['kqr'],
           'years':       ['2012'],
           'version':     '1.0',
-          'description': 'Interface to UrbanDictionary.com via their main site. (APIs are for wussies.)',
+          'description': 'Interface till UrbanDictionary.com via deras huvudsida. (API:er är för mesar.)',
           'argument':    '<term>'}
 
 def run(nick, args):
@@ -20,7 +20,7 @@ def search(args, nick):
     definition = match.group(1)
     example = match.group(2)
   except AttributeError:
-    result = "No hits. ({0})".format(url)
+    result = "Inga träffar. ({0})".format(url)
   else:
     def fixhtml(str):
       str = re.sub(r'(<br ?/>)+', r' ', str)
@@ -37,7 +37,7 @@ def search(args, nick):
 
     definition = common.truncate(fixhtml(definition), int(space_left/2))
     example = common.truncate(fixhtml(example), int(space_left/2))
-    result = '{0} (Example: {1}) -- {2}'.format(definition, example, url)
+    result = '{0} (Exempel: {1}) -- {2}'.format(definition, example, url)
 
   return result
 
