@@ -246,7 +246,7 @@ def run(message, settings): # message is unused for now
             send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
                                                   '[statemsg]', message))
 
-    readbuffer = ''
+    readbuffer = b''
     stack = []
     while True:
         if time() - state['lastmsg'] > settings['irc']['grace_period'] and not state['pinged']:
@@ -264,11 +264,24 @@ def run(message, settings): # message is unused for now
         except socket.timeout:
             continue
         else:
-            readbuffer += readdata.decode('utf-8', 'replace')
+            readbuffer += readdata
         
-        stack = readbuffer.split('\r\n')
+        stack = readbuffer.split(b'\r\n')
         readbuffer = stack.pop()
-        for line in stack:
+        for byteline in stack:
+            def decode(text, encs):
+                for enc in encs:
+                    try:
+                        text = text.decode(enc)
+                    except:
+                        continue
+                    else:
+                        return text, enc
+                # Fallback is latin-1
+                return text.decode('latin-1', 'replace')
+            # Decode the line using likely encodings
+            line, encoding = decode(byteline, ['utf-8', 'latin-1', 'cp1252'])
+
             state['lastmsg'] = time()
             state['pinged'] = False
 
