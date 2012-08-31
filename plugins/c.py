@@ -25,8 +25,10 @@ def calc(args):
 
 
 def sanitise(str):
+    # nbsp ugly shit hack
+    str = str.replace('\xa0', '')
     str = common.unescape_html(codecs.getdecoder('unicode_escape')(str)[0])
     # Note the special ⁄-char (not a regular slash) between </sup> and <sub>
-    str = re.sub(r'<sup>(\d+)</sup>⁄<sub>(\d+)</sub>', r'and \1/\2', str)
-    return str.replace('<sup>', '^(').replace('</sup>',')')
+    str = re.sub(r'<sup>(\d+)</sup>⁄<sub>(\d+)</sub>', r' \1/\2', str)
+    return str.replace('<sup>', '^(').replace('</sup>',')').replace('( ', '(')
 
