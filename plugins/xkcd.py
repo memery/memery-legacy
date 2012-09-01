@@ -49,14 +49,18 @@ def xkcd_info(url, nick):
 
     title_re = re.compile(r'<title>xkcd: (.+?)</div>')
     titlebackup_re = re.compile(r'<div id="ctitle">(.+?)</div>')
-    transcript_re = re.compile(r'<div id="transcript" .+?>(?P<transcript>.+?)\{\{(?P<alt>.+?)\}\}</div>', re.DOTALL)
+    transcript_re = re.compile(r'<div id="transcript" .+?>(?P<transcript>.*?)(\{\{(?P<alt>.+?)\}\})?</div>', re.DOTALL)
     
     # Transcript
     result = transcript_re.search(data)
     transcript = [line.strip() for line in result.group('transcript').splitlines() 
                   if line.strip()]
-    # Unused for now
-    alttext = result.group('alt').strip()
+
+    if not transcript:
+        transcript = ['Ingen beskrivning än!']
+
+    # Unused for now - also borken if no transcript is available
+    # alttext = result.group('alt').strip()
 
     # Title
     title = title_re.search(data)
