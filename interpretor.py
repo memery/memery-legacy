@@ -194,8 +194,8 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
             
     return None
 
-def markov_talk(channel):
-    if random.randint(0,100) > 0:
+def markov_talk(channel, frequency):
+    if random.randint(0, frequency) > 0:
         return None
     try:
         with open('markovdata/{}.txt'.format(channel), 'r') as f:
@@ -219,7 +219,7 @@ def markov_talk(channel):
 
 # Entry point
 
-def main_parse(data, myname, command_prefix):
+def main_parse(data, myname, settings):
 # msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
@@ -232,6 +232,8 @@ def main_parse(data, myname, command_prefix):
     channel = data['channel']
     sendernick = data['sendernick']
     senderident = data['senderident']
+
+    command_prefix = settings['command_prefix']
 
     is_admin = common.is_admin(sendernick, senderident)
 
@@ -308,7 +310,7 @@ def main_parse(data, myname, command_prefix):
             except: pass
             with open('markovdata/{}.txt'.format(channel), 'a') as f:
                 f.write('{}\n'.format(msg))
-            remarks = markov_talk(channel)
+            remarks = markov_talk(channel, settings['behaviour']['markov_frequency'])
             if remarks:
                 return make_privmsgs(remarks, channel)
 
