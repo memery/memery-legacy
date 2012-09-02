@@ -5,17 +5,15 @@ from time import time, sleep
 import random, string
 
 
-def log(text):
+def log(text, type='general'):
     try:
-        common.log(text)
+        common.log(text, type)
     except:
-        print('[BACKUP] '+text.encode(errors='replace'))
+        # TODO: Gör backuploggning mer felsäker för konstiga terminaler 
+        print(repr('[BACKUP][{}] {}'.format(type.upper(), text)))
 
-def log_input(text):
-    log('>> ' + text)
-
-def log_output(text):
-    log('<< ' + text)
+def log_error(text):
+    log(text, 'error')
 
 
 def init_irc(settings):
@@ -27,10 +25,10 @@ def init_irc(settings):
         except:
             try: irc.send(bytes('', 'utf-8'))
             except:
-                log('Uppkoppling till {}:{} misslyckades, försöker igen om {} sekunder...'.format(
-                    settings['irc']['server'],
-                    settings['irc']['port'],
-                    settings['irc']['reconnect_delay']))
+                log_error('Uppkoppling till {}:{} misslyckades, försöker igen om {} sekunder...'.format(
+                            settings['irc']['server'],
+                            settings['irc']['port'],
+                            settings['irc']['reconnect_delay']))
                 sleep(settings['irc']['reconnect_delay'])
             else: break
         else: break
@@ -51,13 +49,14 @@ def new_nick(nick):
     return '{}_{}'.format(nick, ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(2)))
 
 
-def send(irc, text):
+def send(irc, text, logged=False):
     # Sanitize the text
     if text.count('\n') + text.count('\r') > 5:
-        log_output('[ROGUE NEWLINES: (this was not sent)] {}'.format(repr(text)))
+        log_error('[ROGUE NEWLINES: (this was not sent)] {}'.format(repr(text)))
     else:
         irc.send(bytes(text + '\n', 'utf-8'))
-        log_output(text)
+        if not logged:
+            log('<<' + text)
 
 def send_privmsg(irc, channel, msg):
     if msg.count('\n') + msg.count('\r') > 5:
@@ -99,7 +98,7 @@ def send_error(irc, channel, state, desc, error):
     if irc and channel and not autostfu:
         send_privmsg(irc, channel, ircmsg)
     else:
-        log('<No channel> {}'.format(ircmsg))
+        log_error('<No channel> {}'.format(ircmsg))
 
 
 def is_admin(sender):
@@ -222,7 +221,7 @@ def run(message, settings): # message is unused for now
     try:
         settings = common.read_config('config')
     except Exception as e:
-        log('Invalid config: {}'.format(e))
+        log_error('Invalid config: {}'.format(e))
         # TODO: this
         pass
 
@@ -242,7 +241,7 @@ def run(message, settings): # message is unused for now
     irc = init_irc(settings)
 
     if message:
-        log('[STATEMESSAGE] ' + message)
+        log_error('[STATEMESSAGE] ' + message)
         # TODO: Indexing channels causes a crash, some better way of reporting error is sought!
         # if settings['irc']['channels']:
         #     send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
@@ -287,7 +286,6 @@ def run(message, settings): # message is unused for now
             state['lastmsg'] = time()
             state['pinged'] = False
 
-            log_input(line)
             if line.startswith('PING'):
                 send(irc, 'PONG ' + line.split()[1])
                 continue
@@ -304,17 +302,17 @@ def run(message, settings): # message is unused for now
                     continue
                 elif line.split()[1] == 'KICK':
                     state['joined_channels'].discard(channel)
-                    log('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
+                    log_error('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
                     settings['irc']['channels'].discard(channel)
                     continue
 
             if line.split()[1] == '403':
-                log('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
+                log_error('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
                 settings['irc']['channels'].discard(channel)
                 continue
             
             if line.split()[1] == '433':
-                log('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
+                log_error('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
                 state['nick'] = new_nick(settings['irc']['nick'])
                 send(irc, 'NICK {}'.format(state['nick']))
                 continue
@@ -342,11 +340,12 @@ def run(message, settings): # message is unused for now
             try:
                 outmessage = ircparser.parse(line, state, settings)
             except Exception as e:
+                log('>> ' + line)
                 send_error(irc, channel, state, 'ircparser', e)
             else:
                 reset_errorstack()
                 if outmessage:
-                    send(irc, outmessage)
+                    send(irc, outmessage, logged=True)
 
 
         if state['joined_channels'] != settings['irc']['channels']:

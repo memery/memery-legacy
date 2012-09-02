@@ -1,9 +1,10 @@
-import json, os.path, re, traceback
+import json, os.path, os, errno, re, traceback
 from urllib.error import URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from html.parser import HTMLParser
 from http.client import HTTPException
+import datetime
 
 unescape_html = HTMLParser().unescape
 
@@ -13,9 +14,28 @@ def safeprint(text):
     except UnicodeEncodeError:
         print(text.encode(errors='replace'))
 
-def log(text):
-    # TODO: not this
-    safeprint(text)
+def log(text, file='general'):
+    """
+    Log a string to a file in the log directory of memerys working directory.
+
+    text is the string to be logged.
+    file is the file to log to: most likely a channel name or 'error' for
+         error messages. When no file is specified, text will be logged
+         to the 'general' log where anything non-alarming can be dumped.
+    """
+    try: os.makedirs('log')
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+    log_message = '{} {}\n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), text)
+
+    # error messages could be important so leave them in the terminal as well
+    if file == 'error':
+        safeprint(log_message)
+    
+    with open('log/{}.log'.format(file), 'a') as f:
+        f.write(log_message)
 
 def error_info(desc, error):
     """ 

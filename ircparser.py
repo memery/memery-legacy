@@ -1,5 +1,5 @@
 
-import interpretor
+import interpretor, common
 
 class In_Message:
     def from_raw(self, line):
@@ -7,6 +7,9 @@ class In_Message:
         self.sender, self.senderident = sender.split('!', 1)
         self.recipient, self.message = rest.split(' :', 1)
         return self
+
+    def log(self):
+        common.log('<{}!{}> {}'.format(self.sender, self.senderident, self.message), self.recipient)
 
     def __init__(self):
         pass
@@ -21,7 +24,12 @@ class Out_Messages:
 
         return '\n'.join('PRIVMSG {} :{}'.format(self.recipient, msg) for msg in messages)
 
-    def __init__(self, recipient, messages):
+    def log(self):
+        for msg in self.messages:
+            common.log('<{}> {}'.format(self.sender, msg), self.recipient)
+
+    def __init__(self, sender, recipient, messages):
+        self.sender = sender
         self.recipient = recipient
         if type(messages) != type([]):
             self.messages = [messages]
@@ -32,7 +40,11 @@ class Out_Mode:
     def to_raw(self):
         return 'MODE {} {} {}'.format(self.channel, self.mode*len(self.names), ' '.join(self.names))
 
-    def __init__(self, channel, mode, names):
+    def log(self):
+        common.log('-- Mode {} [{} {}] by {}'.format(self.channel, self.mode, ' '.join(self.names), self.sender), self.channel)
+
+    def __init__(self, sender, channel, mode, names):
+        self.sender = sender
         self.channel = channel
         self.mode = mode
         self.names = names
@@ -48,11 +60,10 @@ def irc_to_data(line):
         raise NotImplementedError
 
 def data_to_irc(data):
-    if data:
-        try:
-            return data.to_raw()
-        except AttributeError:
-            raise NotImplementedError('type {} not implemented'.format(type(data)))
+    try:
+        return data.to_raw()
+    except AttributeError:
+        raise NotImplementedError('type {} not implemented'.format(type(data)))
 
 
 def parse(raw_line, state, settings):
@@ -60,13 +71,25 @@ def parse(raw_line, state, settings):
     try:
         indata = irc_to_data(raw_line)
     except NotImplementedError:
+        common.log('>>' + raw_line)
         return None
 
-    # 2. Parse the data to a response
-    response = interpretor.main_parse(indata, state['nick'],
-        settings['behaviour']['command_prefix'])
+    # 2. Try to log the incoming message well-formatted
+    #    Exceptions are okay at this stage, irc.py will catch
+    #    them and log the line properly anyway!
+    indata.log()
 
-    # 3. Return the response in raw form to send it to irc
+    # 3. Parse the data to a response
+    response = interpretor.main_parse(indata, state['nick'], settings)
+    if not response:
+        return None
+
+    # 4. Try to log the outgoing response well-formatted
+    #    Exceptions are okay at this stage, irc.py will catch
+    #    them and log the line properly anyway!
+    response.log()
+
+    # 5. Return the response in raw form to send it to irc
     return data_to_irc(response)
 
 
