@@ -3,22 +3,7 @@ from urllib.parse import quote_plus, quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from html.parser import HTMLParser
-import common
-
-# Helper/convenience functions
-def make_privmsgs(texts, channel):
-    if type(texts) != type([]):
-        texts = [texts]
-    out = []
-    for t in texts:
-        if t:
-            if type(t) == type({}):
-                out.append(t)
-            else:
-                out.append({'type': 'message', 'message': t, 'channel': channel})
-    return out
-    # return [{'type': 'message', 'message': t, 'channel': channel}
-    #         for t in texts if t]
+import ircparser, common
 
 
 # Plugins
@@ -43,18 +28,13 @@ def run_plugin(sendernick, msg, pluginname):
         args = ''
     
     # Load the plugin
-    try:
-        plugin = load_plugin(pluginname)
-    except Exception as e:
-        return common.error_info('pluginen kunde inte laddas', e)
+    plugin = load_plugin(pluginname)
 
     # Run the plugin
     try:
         response = plugin.run(sendernick, args)
     except NotImplementedError:
         return None
-    except Exception as e:
-        return common.error_info('pluginen kraschade i runtime', e)
     else:
         return response
 
@@ -71,19 +51,15 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
         nudgenick = sendernick
 
     if pluginname in plugins:
+        plugin = load_plugin(pluginname)
         try:
-            plugin = load_plugin(pluginname)
-        except Exception as e:
-            return common.error_info('pluginen kunde inte laddas', e)
-        else:
-            try:
-                info = plugin.help()
-                return ['{}: {}: {}'.format(nudgenick, pluginname, info['description']),
-                        '{}: Usage: {}{} {}'.format(nudgenick, command_prefix, pluginname, 
-                                                    info['argument'])]
-            except NotImplementedError:
-                return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, 
-                                        pluginname)
+            info = plugin.help()
+            return ['{}: {}: {}'.format(nudgenick, pluginname, info['description']),
+                    '{}: Usage: {}{} {}'.format(nudgenick, command_prefix, pluginname, 
+                                                info['argument'])]
+        except NotImplementedError:
+            return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, 
+                                    pluginname)
     else:
         helpsplit_re = re.compile(r'\s+\?>\s+?')
         lines = common.read_lineconf(common.read_file('commands'))
@@ -110,10 +86,7 @@ def giveop(msg, channel, sendernick):
     if channel.startswith('#'):
         if not names:
             names = [sendernick]
-        return [{'type': 'mode', 
-                 'mode': '+o', 
-                 'names': names,
-                 'channel': channel}]
+        return ircparser.Out_Mode(channel, '+o', names)
     return None
 
 
@@ -209,7 +182,6 @@ def random_talk(sendernick, msg):
 # Entry point
 
 def main_parse(data, myname, command_prefix):
-# msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
     The returned values from this function should be valid
@@ -217,10 +189,11 @@ def main_parse(data, myname, command_prefix):
 
     NO IT SHOULD NOT
     """
-    msg = data['message']
-    channel = data['channel']
-    sendernick = data['sendernick']
-    senderident = data['senderident']
+
+    msg = data.message
+    channel = data.recipient
+    sendernick = data.sender
+    senderident = data.senderident
 
     is_admin = common.is_admin(sendernick, senderident)
 
@@ -238,59 +211,43 @@ def main_parse(data, myname, command_prefix):
 
     # memery:
     elif re.match('{}.? '.format(myname), msg):
-        return make_privmsgs(nudge_response(sendernick, msg), channel)
+        return ircparser.Out_Messages(channel, nudge_response(sendernick, msg))
 
     # .help
     elif startswith_cp(msg, 'help'):
-        return make_privmsgs(get_command_help(msg, sendernick, myname, 
-                                   command_prefix, plugins), channel)
+        return ircparser.Out_Messages(channel, get_command_help(msg, sendernick, myname,
+                                                               command_prefix, plugins))
 
     # plugins:
     elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
-        return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
+        return ircparser.Out_Messages(channel, run_plugin(sendernick, msg, msg.split()[0][1:]))
 
     # Title
     elif url_re.search(msg):
         out = []
         titles = set()
-        errors = []
         for url in set(url_re.findall(msg)):
-            try:
-                title = common.get_title(url)
-            except Exception as e:
-                errors.append(common.error_info(url, e))
-            else:
-                if title:
-                    titles.add(title)
-        if titles:
-            out.extend(titles)
-        if errors:
-            out.extend(errors)
-        if out:
-            return make_privmsgs(out, channel)
+            title = common.get_title(url)
+            if title:
+                titles.add(title)
+        return ircparser.Out_Messages(channel, list(titles))
 
     # spotify title
     elif spotify_url_re.search(msg):
-        matches = set(spotify_url_re.findall(msg))
-        def titles(ms):
-            for m in ms:
-                try:
-                    title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
-                    if title:
-                        formatted = re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title)
-                        yield formatted
-                except Exception as e:
-                    yield common.error_info('Spotify error', e)
-        spotify_titles = [t for t in titles(matches)]    # coerce generator to list
-
-        return make_privmsgs(spotify_titles, channel)
+        out = []
+        titles = set()
+        for m in set(spotify_url_re.findall(msg)):
+            title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
+            if title:
+                titles.add(re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title))
+        return ircparser.Out_Messages(channel, list(titles))
 
     # Rest of the commands
     else:
         output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
-            return make_privmsgs(output, channel)
+            return ircparser.Out_Messages(channel, output)
         else:
             remarks = random_talk(sendernick, msg)
             if remarks:
-                return make_privmsgs(remarks, channel)
+                return ircparser.Out_Messages(channel, remarks)

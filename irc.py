@@ -5,6 +5,19 @@ from time import time, sleep
 import random, string
 
 
+def log(text):
+    try:
+        common.log(text)
+    except:
+        print('[BACKUP] '+text.encode(errors='replace'))
+
+def log_input(text):
+    log('>> ' + text)
+
+def log_output(text):
+    log('<< ' + text)
+
+
 def init_irc(settings):
     irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     irc.settimeout(settings['irc']['grace_period']/10)
@@ -29,39 +42,27 @@ def init_irc(settings):
     send(irc, 'USER {0} 0 * :IRC bot {0}'.format(settings['irc']['nick']))
     return irc
 
-def log(text):
-    try:
-        common.log(text)
-    except:
-        print('[BACKUP] '+text.encode(errors='replace'))
-
-def log_input(text):
-    log('>> ' + text)
-
-def log_output(text):
-    log('<< ' + text)
+def quit(irc):
+    send(irc, 'QUIT :baiiiii')
+    irc.close()
 
 def new_nick(nick):
     nick = nick[:min(len(nick), 6)] # determine how much to shave off to make room for random chars
     return '{}_{}'.format(nick, ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(2)))
 
+
 def send(irc, text):
     # Sanitize the text
-    if '\r' in text or '\n' in text:
+    if text.count('\n') + text.count('\r') > 5:
         log_output('[ROGUE NEWLINES: (this was not sent)] {}'.format(repr(text)))
     else:
-        irc.send(bytes(text + '\r\n', 'utf-8'))
+        irc.send(bytes(text + '\n', 'utf-8'))
         log_output(text)
 
 def send_privmsg(irc, channel, msg):
-    if '\r' in msg or '\n' in msg:
+    if msg.count('\n') + msg.count('\r') > 5:
         msg = '[rogue newlines:] {}'.format(repr(msg))
     send(irc, 'PRIVMSG {} :{}'.format(channel, msg))
-
-def quit(irc):
-    send(irc, 'QUIT :baiiiii')
-    irc.close()
-
 
 def send_error(irc, channel, state, desc, error):
     exception_re = re.compile(r'File "(.+?)", line (\d+), (.+?)(\n|$)')
@@ -242,9 +243,10 @@ def run(message, settings): # message is unused for now
 
     if message:
         log('[STATEMESSAGE] ' + message)
-        if settings['irc']['channels']:
-            send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
-                                                  '[statemsg]', message))
+        # TODO: Indexing channels causes a crash, some better way of reporting error is sought!
+        # if settings['irc']['channels']:
+        #     send(irc, 'PRIVMSG {} :{}: {}'.format(settings['irc']['channels'][0],
+        #                                          '[statemsg]', message))
 
     readbuffer = ''
     stack = []
@@ -322,51 +324,17 @@ def run(message, settings): # message is unused for now
 
             if state['quiet']:
                 continue
-            
-            # 1. Convert a raw irc message to interpretor-compatible data
-            try:
-                indata = ircparser.irc_to_data(line)
-            except NotImplementedError:
-                continue
-            except Exception as e:
-                send_error(irc, channel, state, 'irc->data', e)
-                continue
 
-            # 2. Parse the data to a list of responses
+
             try:
-                responses = interpretor.main_parse(indata, state['nick'],
-                                                   settings['behaviour']['command_prefix'])
+                outmessage = ircparser.parse(line, state, settings)
             except Exception as e:
-                send_error(irc, channel, state, 'interpretor', e)
-                continue
-            # Nothing to do if there are no responses
-            if not responses:
+                send_error(irc, channel, state, 'ircparser', e)
+            else:
                 reset_errorstack()
-                continue
-
-            # 3. Convert the list of responses to list of raw send()able irc messages
-            sent_error = False
-
-            # Error safety shit DONT FUCKING FLOOD
-            if type(responses) not in (type(()), type([])):
-                send_privmsg(irc, channel, 'interpretor skickade just en {} istället för lista, fixa asap'.format(type(responses)))
-                responses = [responses]
-            if len(responses) > 5:
-                send_privmsg(irc, channel, 'fler än fem rader från interpretor ({} st rader), kickad för flooding är inte ok'.format(len(responses)))
-                responses = responses[:4]
-
-            for response in responses:
-                try:
-                    outmessage = ircparser.data_to_irc(response)
-                except Exception as e:
-                    send_error(irc, channel, state, 'data->irc', e)
-                    sent_error = True
-                else:
+                if outmessage:
                     send(irc, outmessage)
-                    sent_error = False
 
-            if not sent_error:
-                reset_errorstack()
 
         if state['joined_channels'] != settings['irc']['channels']:
             joins = settings['irc']['channels'] - state['joined_channels']
