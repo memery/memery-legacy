@@ -131,7 +131,7 @@ def irc_to_data(line):
         return In_Kick().from_raw(line)
     elif msgtype == 'QUIT':
         return In_Quit().from_raw(line)
-    elif msgtype == 'MODE':
+    elif msgtype == 'MODE' and line.split()[2][0] == '#': # channel modes
         return In_Mode().from_raw(line)
     else:
         raise NotImplementedError
