@@ -167,7 +167,12 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
             
     return None
 
-def markov_talk(channel, frequency):
+def markov_talk(channel, frequency, pickiness):
+    if pickiness < 1 or type(pickiness) != type(2):
+        return 'Error i configen. Ogiltigt värde för markov_pickiness! (Ska vara heltal större än 0.)'
+    if frequency < 0 or type(frequency) != type(2):
+        return 'Error i configen. Ogiltigt värde för markov_frequency! (Ska vara positivt heltal eller noll.)'
+
     if random.randint(0, frequency) > 0:
         return None
     try:
@@ -176,10 +181,10 @@ def markov_talk(channel, frequency):
     except:
         return None
 
-    sentence = random.choice(corpus.splitlines()).split()[:2]
+    sentence = random.choice(corpus.splitlines()).split()[:pickiness]
 
     while True:
-        ms = re.findall(r'\b{} (.+?$)'.format(re.escape(' '.join(sentence[-2:]))), corpus, re.MULTILINE)
+        ms = re.findall(r'\b{} (.+?$)'.format(re.escape(' '.join(sentence[-pickiness:]))), corpus, re.MULTILINE)
         if not ms:
             break
         nextword = random.choice(ms).split()[:1]
@@ -187,7 +192,7 @@ def markov_talk(channel, frequency):
             break
         sentence += nextword
 
-    return [' '.join(sentence)]
+    return ' '.join(sentence)
 
 
 # Entry point
@@ -266,7 +271,7 @@ def main_parse(data, myname, settings):
             except: pass
             with open('markovdata/{}.txt'.format(channel), 'a') as f:
                 f.write('{}\n'.format(msg))
-            remarks = markov_talk(channel, settings['behaviour']['markov_frequency'])
+            remarks = markov_talk(channel, settings['behaviour']['markov_frequency'], settings['behaviour']['markov_pickiness'])
             if remarks:
                 return ircparser.Out_Messages(channel, remarks)
 
