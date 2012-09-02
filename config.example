@@ -12,4 +12,9 @@
   "behaviour": {
     "command_prefix": "@"
   }
+
+  "plugins": {
+    "blacklist": ["c", "lastfm"]
+  }
 }
+
