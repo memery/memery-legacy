@@ -55,7 +55,7 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
         try:
             info = plugin.help()
             return ['{}: {}: {}'.format(nudgenick, pluginname, info['description']),
-                    '{}: Usage: {}{} {}'.format(nudgenick, command_prefix, pluginname, 
+                    '{}: Användning: {}{} {}'.format(nudgenick, command_prefix, pluginname, 
                                                 info['argument'])]
         except NotImplementedError:
             return 'nån idiot har glömt att lägga in hjälptext i {}{}'.format(command_prefix, 
@@ -72,7 +72,7 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
             else:
                 if pluginname == cmd.format(c=''):
                     return ['{}: {}: {}'.format(nudgenick, pluginname, desc.format(myname=myname)),
-                            '{}: Usage: {} {}'.format(nudgenick, cmd.format(c=command_prefix), 
+                            '{}: Användning: {} {}'.format(nudgenick, cmd.format(c=command_prefix), 
                                                       args).strip()]
 
         return '{}: finns inget sånt kommando'.format(sendernick)
@@ -251,3 +251,4 @@ def main_parse(data, myname, command_prefix):
             remarks = random_talk(sendernick, msg)
             if remarks:
                 return ircparser.Out_Messages(channel, remarks)
+

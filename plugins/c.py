@@ -1,36 +1,34 @@
-
+import codecs, re
 import common
-import re
 
 def help():
-  return {'authors':     ['kqr', 'slaeshjag'],
-          'years':       ['2012'],
-          'version':     '1.0',
-          'description': 'Interface till Google calc-API:et.',
-          'argument':    '<uttryck>'}
+    return {'authors':     ['kqr', 'slaeshjag'],
+            'years':       ['2012'],
+            'version':     '1.0',
+            'description': 'Interface till Google calc-API:et.',
+            'argument':    '<uttryck>'}
 
 def run(nick, args):
-  return "{0}: {1}".format(nick, calc(args))
+    return "{0}: {1}".format(nick, calc(args))
 
 def calc(args):
-  content = common.read_url("http://www.google.com/ig/calculator?h=en&q=", args)
+    content = common.read_url("http://www.google.com/ig/calculator?h=en&q=", args)
 
-  lhs = sanitise(re.search(r'lhs: "(.*?)"', content).group(1))
-  rhs = sanitise(re.search(r'rhs: "(.*?)"', content).group(1))
-  err = sanitise(re.search(r'error: "(.*?)"', content).group(1))
+    lhs = sanitise(re.search(r'lhs: "(.*?)"', content).group(1))
+    rhs = sanitise(re.search(r'rhs: "(.*?)"', content).group(1))
+    err = sanitise(re.search(r'error: "(.*?)"', content).group(1))
 
-  if err:
-    return "Ogiltigt uttryck enligt Google! (Felkod: {0})".format(err)
-  else:
-    return "{0} = {1}".format(lhs, rhs)
+    if err:
+        return "Ogiltigt uttryck enligt Google! (Felkod: {0})".format(err)
+    else:
+        return "{0} = {1}".format(lhs, rhs)
 
 
 def sanitise(str):
-  str = re.sub(r'\\x3csup\\x3e(\d+)\\x3c/sup\\x3e\\x26#8260;\\x3csub\\x3e(\d+)\\x3c/sub\\x3e', r' och \1/\2', str)
-  str = re.sub(r'\xa0', r' ', str)
-  str = re.sub(r'\x3d', r'=', str)
-  str = re.sub(r'\\x26#215;', r'×', str)
-  str = re.sub(r'\\x3csup\\x3e', r'^(', str)
-  str = re.sub(r'\\x3c/sup\\x3e', r')', str)
-  return str
+    # nbsp ugly shit hack
+    str = str.replace('\xa0', '')
+    str = common.unescape_html(codecs.getdecoder('unicode_escape')(str)[0])
+    # Note the special ⁄-char (not a regular slash) between </sup> and <sub>
+    str = re.sub(r'<sup>(\d+)</sup>⁄<sub>(\d+)</sub>', r' \1/\2', str)
+    return str.replace('<sup>', '^(').replace('</sup>',')').replace('( ', '(')
 
