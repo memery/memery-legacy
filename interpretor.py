@@ -167,32 +167,39 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
             
     return None
 
-def markov_talk(channel, frequency, pickiness):
+def markov_talk(channel, myname, frequency, pickiness):
     if pickiness < 1 or type(pickiness) != type(2):
-        return 'Error i configen. Ogiltigt värde för markov_pickiness! (Ska vara heltal större än 0.)'
+        raise ValueError('Error i configen. Ogiltigt värde för markov_pickiness! (Ska vara heltal större än 0.)')
     if frequency < 0 or type(frequency) != type(2):
-        return 'Error i configen. Ogiltigt värde för markov_frequency! (Ska vara positivt heltal eller noll.)'
+        raise ValueError('Error i configen. Ogiltigt värde för markov_frequency! (Ska vara positivt heltal eller noll.)')
 
     if random.randint(0, frequency) > 0:
         return None
+    
     try:
-        with open('markovdata/{}.txt'.format(channel), 'r') as f:
-            corpus = f.read()
+        with open('log/{}.log'.format(channel), 'r') as f:
+            corpus = f.readlines()
     except:
         return None
 
-    sentence = random.choice(corpus.splitlines()).split()[:pickiness]
+    def nextwords(corpus, words, myname):
+        for line in corpus:
+            if words + ' ' in line and '> ' in line and myname not in line:
+                try: yield line.split('> ', 1)[1].split(words, 1)[1].split()[0]
+                except: continue
 
-    while True:
-        ms = re.findall(r'\b{} (.+?$)'.format(re.escape(' '.join(sentence[-pickiness:]))), corpus, re.MULTILINE)
+    sentence = random.choice(corpus).split('> ', 1)[1].split(' ')[:pickiness]
+
+    while len(sentence) < 16:
+        ms = [w for w in nextwords(corpus, ' '.join(sentence[-pickiness:]), myname)]
         if not ms:
             break
-        nextword = random.choice(ms).split()[:1]
+        nextword = random.choice(ms)
         if not nextword:
             break
-        sentence += nextword
+        sentence.append(nextword)
 
-    return ' '.join(sentence)
+    return ' '.join(sentence).rstrip('\n')
 
 
 # Entry point
@@ -271,11 +278,9 @@ def main_parse(data, myname, settings):
         # markov chain-style talking
             return ircparser.Out_Messages(myname, channel, output)
         else:
-            try: os.makedirs('markovdata')
-            except: pass
-            with open('markovdata/{}.txt'.format(channel), 'a') as f:
-                f.write('{}\n'.format(msg))
-            remarks = markov_talk(channel, settings['behaviour']['markov_frequency'], settings['behaviour']['markov_pickiness'])
+            remarks = markov_talk(channel, myname,
+                                  settings['behaviour']['markov_frequency'],
+                                  settings['behaviour']['markov_pickiness'])
             if remarks:
                 return ircparser.Out_Messages(myname, channel, remarks)
 

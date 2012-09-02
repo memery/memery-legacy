@@ -169,7 +169,6 @@ def parse(raw_line, state, settings):
 
         # 5. Return the response in raw form to send it to irc
         return data_to_irc(response)
->>>>>>> master
 
 
 
