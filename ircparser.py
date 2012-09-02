@@ -22,7 +22,7 @@ class In_Join:
         return self
 
     def log(self):
-        common.log('{} ({}) has joined {}'.format(self.sender, self.senderident, self.channel), self.channel)
+        common.log('-- {} ({}) has joined {}'.format(self.sender, self.senderident, self.channel), self.channel)
 
     def __init__(self):
         pass
@@ -35,7 +35,7 @@ class In_Part:
         return self
 
     def log(self):
-        common.log('{} ({}) has left {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
+        common.log('-- {} ({}) has left {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
 
     def __init__(self):
         pass
@@ -49,7 +49,7 @@ class In_Kick:
         return self
 
     def log(self):
-        common.log('{}!{} has kicked {} from {} ({})'.format(self.kicker, self.kickerident, self.kickee, self.channel, self.reason), self.channel)
+        common.log('-- {}!{} has kicked {} from {} ({})'.format(self.kicker, self.kickerident, self.kickee, self.channel, self.reason), self.channel)
 
     def __init__(self):
         pass
@@ -62,7 +62,21 @@ class In_Quit:
         return self
 
     def log(self):
-        common.log('{} ({}) has quit {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
+        common.log('-- {} ({}) has quit {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
+
+    def __init__(self):
+        pass
+
+class In_Mode:
+    def from_raw(self, line):
+        sender, msgtype, rest = line[1:].split(' ', 2)
+        self.sender, self.senderident = sender.split('!', 1)
+        self.channel, self.modes, nicks = rest.split(' ', 2)
+        self.nicks = nicks.split()
+        return self
+
+    def log(self):
+        common.log('-- Mode {} [{} {}] by {}'.format(self.channel, self.modes, ' '.join(self.nicks), self.sender), self.channel)
 
     def __init__(self):
         pass
@@ -117,6 +131,8 @@ def irc_to_data(line):
         return In_Kick().from_raw(line)
     elif msgtype == 'QUIT':
         return In_Quit().from_raw(line)
+    elif msgtype == 'MODE':
+        return In_Mode().from_raw(line)
     else:
         raise NotImplementedError
 
@@ -139,38 +155,19 @@ def parse(raw_line, state, settings):
     #    Exceptions are okay at this stage, irc.py will catch
     #    them and log the line properly anyway!
     indata.log()
-
-    # 3. Can we handle this data directly?
-    if type(indata) == In_Join:
-        # Did I join a channel?
-        if indata.sender == state['nick']:
-            state['joined_channels'].add(indata.channel)
-    elif type(indata) == In_Part:
-        # Did I part from a channel?
-        if indata.sender == state['nick']:
-            state['joined_channels'].discard(indata.channel)
-    elif type(indata) == In_Kick:
-        # Did I get kicked!? Better not rejoin.
-        if indata.kickee == state['nick']:
-            state['joined_channels'].discard(indata.channel)
-            common.log('[irc.py/state keeping] Kicked from channel {}.'.format(channel), file='error')
-            settings['irc']['channels'].discard(channel)
-    elif type(indata) == In_Quit:
-        # we don't want to do anything particular at a quit yet
-        pass
     
-    # 4. Parse the data to a response
-    elif not state['quiet']:
+    # 3. Parse the data to a response
+    if not state['quiet']:
         response = interpretor.main_parse(indata, state['nick'], settings)
         if not response:
             return None
 
-        # 5. Try to log the outgoing response well-formatted
+        # 4. Try to log the outgoing response well-formatted
         #    Exceptions are okay at this stage, irc.py will catch
         #    them and log the line properly anyway!
         response.log()
 
-        # 6. Return the response in raw form to send it to irc
+        # 5. Return the response in raw form to send it to irc
         return data_to_irc(response)
 
 
