@@ -14,6 +14,59 @@ class In_Message:
     def __init__(self):
         pass
 
+class In_Join:
+    def from_raw(self, line):
+        sender, msgtype, rest = line[1:].split(' ', 2)
+        self.sender, self.senderident = sender.split('!', 1)
+        self.channel = rest
+        return self
+
+    def log(self):
+        common.log('{} ({}) has joined {}'.format(self.sender, self.senderident, self.channel), self.channel)
+
+    def __init__(self):
+        pass
+
+class In_Part:
+    def from_raw(self, line):
+        sender, msgtype, rest = line[1:].split(' ', 2)
+        self.sender, self.senderident = sender.split('!', 1)
+        self.channel, self.message = rest.split(' :', 1)
+        return self
+
+    def log(self):
+        common.log('{} ({}) has left {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
+
+    def __init__(self):
+        pass
+
+class In_Kick:
+    def from_raw(self, line):
+        sender, msgtype, rest = line[1:].split(' ', 2)
+        self.kicker, self.kickerident = sender.split('!', 1)
+        self.channel, self.kickee, reason = rest.split(' ', 2)
+        self.reason = reason[1:]
+        return self
+
+    def log(self):
+        common.log('{}!{} has kicked {} from {} ({})'.format(self.kicker, self.kickerident, self.kickee, self.channel, self.reason), self.channel)
+
+    def __init__(self):
+        pass
+
+class In_Quit:
+    def from_raw(self, line):
+        sender, msgtype, rest = line[1:].split(' ', 2)
+        self.sender, self.senderident = sender.split('!', 1)
+        self.channel, self.message = rest.split(' :', 1)
+        return self
+
+    def log(self):
+        common.log('{} ({}) has quit {} ({})'.format(self.sender, self.senderident, self.channel, self.message), self.channel)
+
+    def __init__(self):
+        pass
+
 class Out_Messages:
     def to_raw(self):
         messages = self.messages
@@ -52,10 +105,18 @@ class Out_Mode:
 
 def irc_to_data(line):
     """ Convert an irc line to data that interpretor.py can understand """
-    msgtype = line[1:].split(' ', 2)[1]
+    msgtype = line.split()[1]
 
     if msgtype == 'PRIVMSG':
         return In_Message().from_raw(line)
+    elif msgtype == 'JOIN':
+        return In_Join().from_raw(line)
+    elif msgtype == 'PART':
+        return In_Part().from_raw(line)
+    elif msgtype == 'KICK':
+        return In_Kick().from_raw(line)
+    elif msgtype == 'QUIT':
+        return In_Quit().from_raw(line)
     else:
         raise NotImplementedError
 
@@ -71,7 +132,7 @@ def parse(raw_line, state, settings):
     try:
         indata = irc_to_data(raw_line)
     except NotImplementedError:
-        common.log('>>' + raw_line)
+        common.log('>> ' + raw_line)
         return None
 
     # 2. Try to log the incoming message well-formatted
@@ -79,18 +140,38 @@ def parse(raw_line, state, settings):
     #    them and log the line properly anyway!
     indata.log()
 
-    # 3. Parse the data to a response
-    response = interpretor.main_parse(indata, state['nick'], settings)
-    if not response:
-        return None
+    # 3. Can we handle this data directly?
+    if type(indata) == In_Join:
+        # Did I join a channel?
+        if indata.sender == state['nick']:
+            state['joined_channels'].add(indata.channel)
+    elif type(indata) == In_Part:
+        # Did I part from a channel?
+        if indata.sender == state['nick']:
+            state['joined_channels'].discard(indata.channel)
+    elif type(indata) == In_Kick:
+        # Did I get kicked!? Better not rejoin.
+        if indata.kickee == state['nick']:
+            state['joined_channels'].discard(indata.channel)
+            common.log('[irc.py/state keeping] Kicked from channel {}.'.format(channel), file='error')
+            settings['irc']['channels'].discard(channel)
+    elif type(indata) == In_Quit:
+        # we don't want to do anything particular at a quit yet
+        pass
+    
+    # 4. Parse the data to a response
+    elif not state['quiet']:
+        response = interpretor.main_parse(indata, state['nick'], settings)
+        if not response:
+            return None
 
-    # 4. Try to log the outgoing response well-formatted
-    #    Exceptions are okay at this stage, irc.py will catch
-    #    them and log the line properly anyway!
-    response.log()
+        # 5. Try to log the outgoing response well-formatted
+        #    Exceptions are okay at this stage, irc.py will catch
+        #    them and log the line properly anyway!
+        response.log()
 
-    # 5. Return the response in raw form to send it to irc
-    return data_to_irc(response)
+        # 6. Return the response in raw form to send it to irc
+        return data_to_irc(response)
 
 
 

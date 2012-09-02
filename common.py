@@ -28,14 +28,14 @@ def log(text, file='general'):
         if e.errno != errno.EEXIST:
             raise
 
-    log_message = '{} {}\n'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), text)
+    log_message = '{} {}'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), text)
 
     # error messages could be important so leave them in the terminal as well
     if file == 'error':
         safeprint(log_message)
     
     with open('log/{}.log'.format(file), 'a') as f:
-        f.write(log_message)
+        f.write(log_message + '\n')
 
 def error_info(desc, error):
     """ 

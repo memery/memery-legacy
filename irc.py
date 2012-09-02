@@ -13,7 +13,7 @@ def log(text, type='general'):
         print(repr('[BACKUP][{}] {}'.format(type.upper(), text)))
 
 def log_error(text):
-    log(text, 'error')
+    log(text, type='error')
 
 
 def init_irc(settings):
@@ -56,7 +56,7 @@ def send(irc, text, logged=False):
     else:
         irc.send(bytes(text + '\n', 'utf-8'))
         if not logged:
-            log('<<' + text)
+            log('<< ' + text)
 
 def send_privmsg(irc, channel, msg):
     if msg.count('\n') + msg.count('\r') > 5:
@@ -95,10 +95,9 @@ def send_error(irc, channel, state, desc, error):
         state['error_repetitions'] = state['error_printcap']
         autostfu = False        
 
+    log_error('[ERROR] {}'.format(ircmsg))
     if irc and channel and not autostfu:
         send_privmsg(irc, channel, ircmsg)
-    else:
-        log_error('<No channel> {}'.format(ircmsg))
 
 
 def is_admin(sender):
@@ -287,25 +286,13 @@ def run(message, settings): # message is unused for now
             state['pinged'] = False
 
             if line.startswith('PING'):
+                log('>> ' + line)
                 send(irc, 'PONG ' + line.split()[1])
                 continue
 
             channel = get_channel(line, settings, state)
 
             # == State keeping ==
-            if line.startswith(':{}!'.format(state['nick'])):
-                if line.split()[1] == 'JOIN':
-                    state['joined_channels'].add(channel)
-                    continue
-                elif line.split()[1] == 'PART':
-                    state['joined_channels'].discard(channel)
-                    continue
-                elif line.split()[1] == 'KICK':
-                    state['joined_channels'].discard(channel)
-                    log_error('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
-                    settings['irc']['channels'].discard(channel)
-                    continue
-
             if line.split()[1] == '403':
                 log_error('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
                 settings['irc']['channels'].discard(channel)
@@ -324,17 +311,16 @@ def run(message, settings): # message is unused for now
             except Exception as e:
                 send_error(irc, channel, state, 'admincmd', e)
             else:
-                if admin_action == 'continue':
-                    state['error_repetitions'] = 0
-                    state['error_latest'] = ''
-                    continue
-                elif admin_action != None:
-                    quit(irc)
-                    return admin_action
+                if admin_action:
+                    log('>> ' + line)
+                    if admin_action == 'continue':
+                        state['error_repetitions'] = 0
+                        state['error_latest'] = ''
+                        continue
+                    else:
+                        quit(irc)
+                        return admin_action
             # == End admin ==
-
-            if state['quiet']:
-                continue
 
 
             try:
