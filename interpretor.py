@@ -80,13 +80,13 @@ def get_command_help(msg, sendernick, myname, command_prefix, plugins):
 
 # Main functions
 
-def giveop(msg, channel, sendernick):
+def giveop(msg, myname, channel, sendernick):
     names = set(msg.split()[1:])
     # Don't bother opping in query
     if channel.startswith('#'):
         if not names:
             names = [sendernick]
-        return ircparser.Out_Mode(channel, '+o', names)
+        return ircparser.Out_Mode(myname, channel, '+o', names)
     return None
 
 
@@ -205,6 +205,8 @@ def main_parse(data, myname, settings):
 
     NO IT SHOULD NOT
     """
+    if type(data) != ircparser.In_Message:
+        return None
 
     msg = data.message
     channel = data.recipient
@@ -225,20 +227,22 @@ def main_parse(data, myname, settings):
 
     # .giveop
     if startswith_cp(msg, 'giveop') and is_admin:
-        return giveop(msg, channel, sendernick)
+        return giveop(msg, myname, channel, sendernick)
 
     # memery:
     elif re.match('{}.? '.format(myname), msg):
-        return ircparser.Out_Messages(channel, nudge_response(sendernick, msg))
+        return ircparser.Out_Messages(myname, channel, nudge_response(sendernick, msg))
 
     # .help
     elif startswith_cp(msg, 'help'):
-        return ircparser.Out_Messages(channel, get_command_help(msg, sendernick, myname,
+        return ircparser.Out_Messages(myname, channel, get_command_help(msg, sendernick, myname,
                                                                command_prefix, plugins))
 
     # plugins:
-    elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
-        return ircparser.Out_Messages(channel, run_plugin(sendernick, msg, msg.split()[0][1:]))
+    elif msg.startswith(command_prefix)\
+             and msg.split()[0][1:] in plugins\
+             and msg.split()[0][1:] not in settings['plugins']['blacklist']:
+        return ircparser.Out_Messages(myname, channel, run_plugin(sendernick, msg, msg.split()[0][1:]))
 
     # Title
     elif url_re.search(msg):
@@ -248,7 +252,7 @@ def main_parse(data, myname, settings):
             title = common.get_title(url)
             if title:
                 titles.add(title)
-        return ircparser.Out_Messages(channel, list(titles))
+        return ircparser.Out_Messages(myname, channel, list(titles))
 
     # spotify title
     elif spotify_url_re.search(msg):
@@ -258,14 +262,14 @@ def main_parse(data, myname, settings):
             title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
             if title:
                 titles.add(re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title))
-        return ircparser.Out_Messages(channel, list(titles))
+        return ircparser.Out_Messages(myname, channel, list(titles))
 
     # Rest of the commands
     else:
         output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
-            return ircparser.Out_Messages(channel, output)
         # markov chain-style talking
+            return ircparser.Out_Messages(myname, channel, output)
         else:
             try: os.makedirs('markovdata')
             except: pass
@@ -273,6 +277,6 @@ def main_parse(data, myname, settings):
                 f.write('{}\n'.format(msg))
             remarks = markov_talk(channel, settings['behaviour']['markov_frequency'], settings['behaviour']['markov_pickiness'])
             if remarks:
-                return ircparser.Out_Messages(channel, remarks)
+                return ircparser.Out_Messages(myname, channel, remarks)
 
 
