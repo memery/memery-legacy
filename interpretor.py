@@ -181,7 +181,7 @@ def random_talk(sendernick, msg):
 
 # Entry point
 
-def main_parse(data, myname, command_prefix):
+def main_parse(data, myname, settings):
     """ 
     >> Main entry function! <<
     The returned values from this function should be valid
@@ -194,6 +194,8 @@ def main_parse(data, myname, command_prefix):
     channel = data.recipient
     sendernick = data.sender
     senderident = data.senderident
+
+    command_prefix = settings['behaviour']['command_prefix']
 
     is_admin = common.is_admin(sendernick, senderident)
 
@@ -219,8 +221,10 @@ def main_parse(data, myname, command_prefix):
                                                                command_prefix, plugins))
 
     # plugins:
-    elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
-        return ircparser.Out_Messages(channel, run_plugin(sendernick, msg, msg.split()[0][1:]))
+    elif msg.startswith(command_prefix)\
+             and msg.split()[0][1:] in plugins\
+             and msg.split()[0][1:] not in settings['plugins']['blacklist']:
+        return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
 
     # Title
     elif url_re.search(msg):

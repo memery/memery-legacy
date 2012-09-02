@@ -6,6 +6,47 @@ The third incarnation of the infamous ircbot. Not with less ugly pos code!
 Written in Python 3, not compatible with Python 2.
 
 
+Usage
+-----
+
+memery is very dynamic and almost everything can be done without losing the IRC
+connection. For administration there are several commands available.
+
+### Administrator commands
+
+The administrator commands can only be executed by someone who matches any
+regex in the adminlist configuration file (further details in the section
+about config files.)
+
+All administrator commands share the same syntax:
+
+* `bot-nick: <administrator command>`, or
+* `bot-nick, <administrator command>`.
+
+The different administrator commands are as follows.
+
+* `help`: Shows a list of administrator commands.
+* `stfu`: Toggles memery's *quiet* state. When memery is quiet, she will idle
+and only listen to administrator commands -- no other commands or plugins. The
+current state of quietness is indicated by whether memery is marked as away.
+* `update config`: Re-reads the config. If the config is changed, the changes
+will be applied live. This is currently the preferred way to join/part channels,
+change nickname, change servers etc. Updating the config will try to apply the
+config as if memery was freshly started, but will not perform anything related
+to parts that aren't changed. (E.g. if the server or port isn't changed, memery
+will not drop the current connection either. If it is, she will reconnect to
+the new server.)
+* `reload`: Reloads large parts of memery without dropping the IRC connection.
+Useful for updating memery to the current versions of `interpretor.py`,
+`ircparser.py` and `common.py`.
+* `restart`: Reboots almost all of memery. Needs to be done to update memery to
+the current version of `irc.py`, otherwise probably unneeded.
+* `reconnect`: Simply reconnects to the current IRC server. There is, as far as
+I can see, no reason to invoke this command manually at all.
+* `quit`: Terminates memery completely. Should very rarely be needed unless a
+permanent termination is desired.
+
+
 Config files
 ------------
 
@@ -24,26 +65,25 @@ values however you wish to get started quickly.
 
 The values in `config` are as explained:
 
-* `nick`: The nick memery will use on the network. Please pick a nick that is
-unused. memery will not be able to connect with an occupied nick.
-* `channels`: A list of channels memery will join.
-* `server`: The server memery will connect to.
-* `port`: The port memery will connect to.
-* `ssl`: Whether or not memery should connect using SSL.
-* `reconnect_delay`: Whenever memery fails connecting to a server, she will
+* `irc/nick`: The nick memery will use on the network. If the nick is occupied,
+memery will generate a hopefully free new one based on this.
+* `irc/channels`: A list of channels memery will join.
+* `irc/server`: The server memery will connect to.
+* `irc/port`: The port memery will connect to.
+* `irc/ssl`: Whether or not memery should connect using SSL.
+* `irc/reconnect_delay`: Whenever memery fails connecting to a server, she will
 retry over and over. How often she retries is specified by this setting,
 in seconds.
-* `grace_period`: When memery stops receiving messages from the server for
+* `irc/grace_period`: When memery stops receiving messages from the server for
 the number of seconds specified by this setting, she will attempt to contact
 the server herself. If she fails to receive anything for an extended period
 of time, she will attempt to reconnect to the server.
-* `command_prefix`: Most commands are executed with something like `!ping`
+* `behaviour/command_prefix`: Most commands are executed with something like `!ping`
 or `.ping` or `@ping` or perhaps even `command: ping`. This setting dictates
 the leading character sequence that will identify a command.
-
-At the moment, it is unfortunately not possible to reload `config` during
-execution. This will probably only be a problem if you wish to change the nick
-or command prefix during execution.
+* `plugins/blacklist`: The *plugins* in this list will not be executed by
+anyone. Useful when a plugin is considered unnecessary or its usage collides with
+another bot.
 
 
 ### adminlist
