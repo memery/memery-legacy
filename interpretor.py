@@ -206,7 +206,7 @@ def main_parse(data, myname, settings):
     sendernick = data.sender
     senderident = data.senderident
 
-    command_prefix = settings['command_prefix']
+    command_prefix = settings['behaviour']['command_prefix']
 
     is_admin = common.is_admin(sendernick, senderident)
 
