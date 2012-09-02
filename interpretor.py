@@ -189,6 +189,8 @@ def main_parse(data, myname, settings):
 
     NO IT SHOULD NOT
     """
+    if type(data) != ircparser.In_Message:
+        return None
 
     msg = data.message
     channel = data.recipient

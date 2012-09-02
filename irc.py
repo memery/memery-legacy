@@ -293,16 +293,27 @@ def run(message, settings): # message is unused for now
             channel = get_channel(line, settings, state)
 
             # == State keeping ==
-            if line.split()[1] == '403':
+            if line.startswith(':{}!'.format(state['nick'])):
+                if line.split()[1] == 'JOIN':
+                    state['joined_channels'].add(channel)
+                elif line.split()[1] == 'PART':
+                    state['joined_channels'].discard(channel)
+                elif line.split()[1] == 'KICK':
+                    state['joined_channels'].discard(channel)
+                    log('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
+                    settings['irc']['channels'].discard(channel)
+
+            elif line.split()[1] == '403':
                 log_error('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
                 settings['irc']['channels'].discard(channel)
                 continue
             
-            if line.split()[1] == '433':
+            elif line.split()[1] == '433':
                 log_error('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
                 state['nick'] = new_nick(settings['irc']['nick'])
                 send(irc, 'NICK {}'.format(state['nick']))
                 continue
+            # == End state keeping ==
 
 
             # == Admin ==
