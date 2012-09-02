@@ -347,8 +347,7 @@ def run(message, settings): # message is unused for now
 
             # 2. Parse the data to a list of responses
             try:
-                responses = interpretor.main_parse(indata, state['nick'],
-                                                   settings['behaviour']['command_prefix'])
+                responses = interpretor.main_parse(indata, state['nick'], settings)
             except Exception as e:
                 send_error(irc, channel, state, 'interpretor', e)
                 continue

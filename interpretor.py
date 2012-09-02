@@ -208,7 +208,7 @@ def random_talk(sendernick, msg):
 
 # Entry point
 
-def main_parse(data, myname, command_prefix):
+def main_parse(data, myname, settings):
 # msg='', sendernick='', senderident='', channel='', myname='', command_prefix='.'):
     """ 
     >> Main entry function! <<
@@ -221,6 +221,8 @@ def main_parse(data, myname, command_prefix):
     channel = data['channel']
     sendernick = data['sendernick']
     senderident = data['senderident']
+
+    command_prefix = settings['behaviour']['command_prefix']
 
     is_admin = common.is_admin(sendernick, senderident)
 
@@ -246,7 +248,9 @@ def main_parse(data, myname, command_prefix):
                                    command_prefix, plugins), channel)
 
     # plugins:
-    elif msg.startswith(command_prefix) and msg.split()[0][1:] in plugins:
+    elif msg.startswith(command_prefix)\
+             and msg.split()[0][1:] in plugins\
+             and msg.split()[0][1:] not in settings['plugins']['blacklist']:
         return make_privmsgs(run_plugin(sendernick, msg, msg.split()[0][1:]), channel)
 
     # Title
