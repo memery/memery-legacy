@@ -263,6 +263,9 @@ def run(message, settings): # message is unused for now
                 readdata = irc.recv(4096)
         except socket.timeout:
             continue
+        except ssl.SSLError as e:
+            if 'timed out' in str(e): continue
+            else: raise
         else:
             readbuffer += readdata
         
