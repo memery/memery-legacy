@@ -90,15 +90,6 @@ def giveop(msg, myname, channel, sendernick):
     return None
 
 
-def nudge_response(sendernick, msg):
-    if random.randint(0,6) > 0:
-        return None
-    l = ['{}: MEN DU ÄR JU DUM I HUVUDET',
-         '{}: det kanske är du som gör fel?',
-         '{}: aa fast nej',
-         '{}: troru det själv eller']
-    return random.choice(l).format(sendernick)
-
 def get_command_imports(lines):
     """
     Extract all module names from the lines, import them,
@@ -167,16 +158,37 @@ def get_output(msg='', myname='', sender='', channel='', command_prefix='.'):
             
     return None
 
-def random_talk(sendernick, msg):
-    if random.randint(0,2300) > 0 or len(msg) > 40:
+def markov_talk(channel, myname, pickiness):
+    if pickiness < 1 or type(pickiness) != type(2):
+        raise ValueError('Error i configen. Ogiltigt värde för markov_pickiness! (Ska vara heltal större än 0.)')
+
+    try:
+        with open('log/{}.log'.format(channel), 'r') as f:
+            corpus = f.readlines()
+    except:
         return None
-    choices = ['{msg} :)', '{msg}', '{msg}?',
-               '...', 'uh', 'ok', 'va?',
-               'precis', 'mm', 'exakt',
-               'knappast', 'nej', 'du har fel',
-               '{nick}: ?', '{nick}',
-               'men', 'bah', 'pff', 'hm']
-    return random.choice(choices).format(msg=msg, nick=sendernick)
+
+    def nextwords(corpus, words, myname):
+        for line in corpus:
+            if words + ' ' in line and '> ' in line and myname not in line:
+                try: yield line.split('> ', 1)[1].split(words, 1)[1].split()[0]
+                except: continue
+
+    seed = random.choice(corpus).split('> ', 1)[1].split(' ')
+    if seed[0][-1] in (':', ','):
+        seed = seed[1:]
+    sentence = seed[:pickiness]
+
+    while len(sentence) < 16:
+        ms = [w for w in nextwords(corpus, ' '.join(sentence[-pickiness:]), myname)]
+        if not ms:
+            break
+        nextword = random.choice(ms)
+        if not nextword:
+            break
+        sentence.append(nextword)
+
+    return ' '.join(sentence).rstrip('\n')
 
 
 # Entry point
@@ -215,7 +227,10 @@ def main_parse(data, myname, settings):
 
     # memery:
     elif re.match('{}.? '.format(myname), msg):
-        return ircparser.Out_Messages(myname, channel, nudge_response(sendernick, msg))
+        if random.randint(0, 2) == 0:
+            return ircparser.Out_Messages(myname, channel,
+                                          sendernick + ': '+ markov_talk(channel, myname,
+                                                      settings['behaviour']['markov_pickiness']))
 
     # .help
     elif startswith_cp(msg, 'help'):
@@ -252,9 +267,13 @@ def main_parse(data, myname, settings):
     else:
         output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
+        # markov chain-style talking
             return ircparser.Out_Messages(myname, channel, output)
         else:
-            remarks = random_talk(sendernick, msg)
-            if remarks:
-                return ircparser.Out_Messages(myname, channel, remarks)
+            if random.randint(0, settings['behaviour']['markov_frequency']) == 0:
+                return ircparser.Out_Messages(myname, channel,
+                                              markov_talk(channel, myname,
+                                                          settings['behaviour']['markov_pickiness']))
+
+
 
