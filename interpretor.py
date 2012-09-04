@@ -227,7 +227,7 @@ def main_parse(data, myname, settings):
 
     # memery:
     elif re.match('{}.? '.format(myname), msg):
-        if random.randint(0, 2) == 0:
+        if random.randint(1, 2) == 1:
             return ircparser.Out_Messages(myname, channel,
                                           sendernick + ': '+ markov_talk(channel, myname,
                                                       settings['behaviour']['markov_pickiness']))
