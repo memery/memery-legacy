@@ -1,4 +1,5 @@
 
+from time import time
 import interpretor, common
 
 class In_Message:
@@ -43,13 +44,13 @@ class In_Part:
 class In_Kick:
     def from_raw(self, line):
         sender, msgtype, rest = line[1:].split(' ', 2)
-        self.kicker, self.kickerident = sender.split('!', 1)
+        self.sender, self.senderident = sender.split('!', 1)
         self.channel, self.kickee, reason = rest.split(' ', 2)
         self.reason = reason[1:]
         return self
 
     def log(self):
-        common.log('-- {}!{} has kicked {} from {} ({})'.format(self.kicker, self.kickerident, self.kickee, self.channel, self.reason), self.channel)
+        common.log('-- {}!{} has kicked {} from {} ({})'.format(self.sender, self.senderident, self.kickee, self.channel, self.reason), self.channel)
 
     def __init__(self):
         pass
@@ -166,6 +167,11 @@ def parse(raw_line, state, settings):
         #    Exceptions are okay at this stage, irc.py will catch
         #    them and log the line properly anyway!
         response.log()
+
+        # (log this response in the anti-flood state log)
+        if indata.senderident not in state['anti-flood']:
+            state['anti-flood'][indata.senderident] = []
+        state['anti-flood'][indata.senderident].append(time())
 
         # 5. Return the response in raw form to send it to irc
         return data_to_irc(response)
