@@ -19,7 +19,7 @@ def lastfm(args):
     key = common.read_lineconf(common.read_file("lastfm-api-key"))[0]
     if not (len(key) == 32 and re.search(r'^[0-9a-f]+$', key)):
       raise IOError
-  except IOError:
+  except (IOError, IndexError):
       raise IOError('Ingen nyckel för last.fm-API:et kunde hittas. Skapa filen lastfm-api-key med enbart nyckeln i sig i botens arbetskatalog.')
 
   try:
