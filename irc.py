@@ -231,7 +231,8 @@ def run(message, settings): # message is unused for now
              'joined_channels': set(),
              'lastmsg': time(),
              'pinged': False,
-             'nick': settings['irc']['nick']}
+             'nick': settings['irc']['nick'],
+             'anti-flood': {}}
 
     def reset_errorstack():
         state['error_repetitions'] = 0
@@ -255,6 +256,36 @@ def run(message, settings): # message is unused for now
         elif time() - state['lastmsg'] > settings['irc']['grace_period']*1.5:
             quit(irc)
             return 'reconnect'
+
+        antiflood_users_to_remove = []
+        for user in state['anti-flood']:
+
+            # if a user has sent more than 3 messages in two seconds
+            # (state['anti-flood'][user] contains timestamps of the users
+            # previous messages):
+
+            seconds = range(0, 2)
+            for i in seconds:
+                mathd_anti = [int((t + i)/len(seconds)) for t in state['anti-flood'][user]]
+                if mathd_anti.count(max(mathd_anti)) > 3:
+                    # get their asses on the black list file
+                    with open('userblacklist', 'a') as f:
+                        f.write('.*!{}\n'.format(user))
+                    log_error('[FLOOD CONTROL] User {} trying to flood, blacklisting...'.format(user))
+                    antiflood_users_to_remove.append(user)
+                    break
+            else:
+                pass
+                # otherwise, keep only the relevant last messages in the "log"
+                state['anti-flood'][user] = [t for t in state['anti-flood'][user] if t > time() - 3]
+
+                # if the list became empty, just remove it
+                if not state['anti-flood'][user]:
+                    antiflood_users_to_remove.append(user)
+
+        for user in antiflood_users_to_remove:
+            del state['anti-flood'][user]
+
 
         try:
             if settings['irc']['ssl']:
