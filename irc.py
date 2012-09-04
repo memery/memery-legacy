@@ -324,6 +324,11 @@ def run(message, settings): # message is unused for now
                 send(irc, 'PONG ' + line.split()[1])
                 continue
 
+            if re.match(r':[^ ]+ NOTICE {} :.*throttled.*flooding.*'.format(re.escape(state['nick'])), line):
+                state['quiet'] = True
+                send(irc, 'AWAY stfu\'d')
+                log_error('[FLOOD CONTROL] Throttled by the server due to flooding, auto-stfu\'d.')
+
             channel = get_channel(line, settings, state)
 
             # == State keeping ==
