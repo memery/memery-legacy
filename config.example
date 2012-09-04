@@ -11,6 +11,8 @@
 
   "behaviour": {
     "command_prefix": "@"
+    "markov_frequency": 10,
+    "markov_pickiness": 2
   }
 
   "plugins": {

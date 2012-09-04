@@ -81,6 +81,16 @@ of time, she will attempt to reconnect to the server.
 * `behaviour/command_prefix`: Most commands are executed with something like `!ping`
 or `.ping` or `@ping` or perhaps even `command: ping`. This setting dictates
 the leading character sequence that will identify a command.
+* `behaviour/markov_frequency`: Specifies the /odds/ that memery will spit out a
+random message every time someone else types anything. A value of 10 means roughly
+"every tenth message," with actual results depending on the dice. A value of 1
+means "every message." A value of 0 means "never" and essentially disables random
+talking.
+* `behaviour/markov_pickiness`: Specifies the "state size" of the markov-style
+engine that drives the random talking. While a difficult parameter to explain,
+values of 2, 3 or 4 are recommended. The higher the number, the more grammatically
+correct the sentences will be, but the larger a collection of logs will be required
+for the talking to stop being predictable.
 * `plugins/blacklist`: The *plugins* in this list will not be executed by
 anyone. Useful when a plugin is considered unnecessary or its usage collides with
 another bot.

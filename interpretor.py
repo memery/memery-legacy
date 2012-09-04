@@ -270,7 +270,8 @@ def main_parse(data, myname, settings):
         # markov chain-style talking
             return ircparser.Out_Messages(myname, channel, output)
         else:
-            if random.randint(0, settings['behaviour']['markov_frequency']) == 0:
+            if settings['behaviour']['markov_frequency'] > 0 and \
+               random.randint(1, settings['behaviour']['markov_frequency']) == 1:
                 return ircparser.Out_Messages(myname, channel,
                                               markov_talk(channel, myname,
                                                           settings['behaviour']['markov_pickiness']))
