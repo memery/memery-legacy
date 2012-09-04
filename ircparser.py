@@ -170,9 +170,10 @@ def parse(raw_line, state, settings):
         response.log()
 
         # (log this response in the anti-flood state log)
-        if indata.senderident not in state['anti-flood']:
-            state['anti-flood'][indata.senderident] = []
-        state['anti-flood'][indata.senderident].append(time())
+        floodident = '{}!{}'.format(indata.sender, indata.senderident)
+        if floodident not in state['anti-flood']:
+            state['anti-flood'][floodident] = []
+        state['anti-flood'][floodident].append(time())
 
         # 5. Return the response in raw form to send it to irc
         return data_to_irc(response)

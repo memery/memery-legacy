@@ -270,7 +270,7 @@ def run(message, settings): # message is unused for now
                 if mathd_anti.count(max(mathd_anti)) > 3:
                     # get their asses on the black list file
                     with open('userblacklist', 'a') as f:
-                        f.write('.*!{}\n'.format(user))
+                        f.write('{}\n'.format(user))
                     log_error('[FLOOD CONTROL] User {} trying to flood, blacklisting...'.format(user))
                     antiflood_users_to_remove.append(user)
                     break
