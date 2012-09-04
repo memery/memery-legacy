@@ -4,16 +4,16 @@
     "channels": ["#channel", "#another"],
     "server": "irc.efnet.org",
     "port": 6669,
-    "ssl": false
+    "ssl": false,
     "reconnect_delay": 30,
     "grace_period": 240
   },
 
   "behaviour": {
-    "command_prefix": "@"
+    "command_prefix": "@",
     "markov_frequency": 10,
     "markov_pickiness": 2
-  }
+  },
 
   "plugins": {
     "blacklist": ["c", "lastfm"]
