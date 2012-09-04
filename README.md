@@ -65,6 +65,8 @@ values however you wish to get started quickly.
 
 The values in `config` are as explained:
 
+`irc`:
+
 * `irc/nick`: The nick memery will use on the network. If the nick is occupied,
 memery will generate a hopefully free new one based on this.
 * `irc/channels`: A list of channels memery will join.
@@ -78,6 +80,9 @@ in seconds.
 the number of seconds specified by this setting, she will attempt to contact
 the server herself. If she fails to receive anything for an extended period
 of time, she will attempt to reconnect to the server.
+
+`behaviour`:
+
 * `behaviour/command_prefix`: Most commands are executed with something like `!ping`
 or `.ping` or `@ping` or perhaps even `command: ping`. This setting dictates
 the leading character sequence that will identify a command.
@@ -91,6 +96,9 @@ engine that drives the random talking. While a difficult parameter to explain,
 values of 2, 3 or 4 are recommended. The higher the number, the more grammatically
 correct the sentences will be, but the larger a collection of logs will be required
 for the talking to stop being predictable.
+
+`plugins`:
+
 * `plugins/blacklist`: The *plugins* in this list will not be executed by
 anyone. Useful when a plugin is considered unnecessary or its usage collides with
 another bot.
