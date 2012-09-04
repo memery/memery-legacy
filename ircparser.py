@@ -32,7 +32,8 @@ class In_Part:
     def from_raw(self, line):
         sender, msgtype, rest = line[1:].split(' ', 2)
         self.sender, self.senderident = sender.split('!', 1)
-        self.channel, self.message = rest.split(' :', 1)
+        if ' :' in rest: self.channel, self.message = rest.split(' :', 1)
+        else: self.channel, self.message = rest, ''
         return self
 
     def log(self):
