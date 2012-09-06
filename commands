@@ -1,33 +1,52 @@
-# === DOKUMENTATION === #
+# === DOCUMENTATION === #
 
-# Tomma rader och rader som börjar med # IGNORERAS.
-# Felaktiga rader ignoreras också (detta bör inte utnyttjas, punks)
+# Empty lines and lines starting with # are IGNORED.
+# Incorrect lines are also ignored (don't abuse it, punks)
 
-# Rader som INTE är ett KOMMANDO (se nedan) tolkas som IMPORT.
-#   * Raderna ska bestå av modulnamn separerade med ett , och ev. whitespace
-#   * Moduler som inte finns kommer inte att importeras (eller krascha botten)
-# OBS !! urllib.parse, urllib.error mfl ska inte importeras separat, utan
-#     bara importeras som urllib. Troligtvis gäller detta för andra liknande.
 
-# Rader som innehåller ' -> ' tolkas som KOMMANDON.
-#   (mängden whitespace runt -> är irrelevant)
-# Båda sidor parsas först med .format():
-#   * {myname} = bottens namn
-#   * {sender} = avsändarens nick, inte ident/hostname
-#   * {channel} {message} är ganska självklara
-#   * behövs {} måste dom skrivas dubbelt: {{}}
-# Vänster sida:
-#   * tolkas som REGEX
-#   * {arg} byts ut mot (.+?)
-#   * {c} byts ut mot command_prefix i config
-# Höger sida:
-#   * bara string formatting
-#   * {arg} står för vad {arg} innehöll på höger sida
-#   * {qarg} innebär quote(arg), bra för urler
-#   > kan exekvera riktig pythonkod om texten börjar med #py:
-#       * allt efter '#py:' körs i eval()
-#       * alla moduler som importerats i DEN HÄR FILEN kan användas
-#       * argument ({arg} etc) skrivs utan {} runt om
+# Lines that contain ' -> ' are parsed as COMMANDS.
+#   (the amount or type of whitespace surrounding -> is irrelevant)
+# Both sides are first parsed with .format(). The following substrings are replaced:
+#   * {myname} = the name of the bot
+#   * {sender} = the sender's nick, not including ident and/or hostname
+#   * {channel} {message} are both obvious
+#   * If { or } is needed, they should be escaped: {{ resp. }}
+# Left sida:
+#   * parsed as a REGULAR EXPRESSION using .match(<the string>+'$')
+#       > this means that the whole left side has to match the whole message!
+#   * {arg} is replaced with (?P<arg>.+?)
+#   * {c} is replaced with the command_prefix-string from config
+# Right sida:
+#   * no regex parsing
+#   * {arg} is replaced with what {arg} stood for in the left side
+#   * {qarg} is a shorthand for quote(arg), handy for urls
+#   > can execupe real python code if the text starts with '#py:':
+#       * everything after '#py:' is run through eval()
+#       * all modules that have been imported in THIS FILE (commands) can be used
+#       * that means, any and all modules that are to be used must be imported here!
+#       * (see IMPORT lines below for more info on how)
+#       * arguments ({arg}, {qarg}) are written without surrounding {}
+
+
+# Lines that contain TWO ' ?> ' are parsed as HELP LINES.
+#   (the amount or type of whitespace surrounding ?> is irrelevant)
+# These are used in the .help function.
+# The structure of these lines is:
+# <command> ?> <arguments> ?> <help text>
+# Command:
+#   * {c} is replaced with the command_prefix-string
+#   * NOT parsed as a regex
+# Arguments:
+#   * just a simple dumb string, should show what kind of arguments that should be provided
+# Help text:
+#   * the text that will be shown when a user types .help command
+
+
+# Lines that are NOT COMMANDS or HELP (see below) are treated as IMPORT LINES
+#   * The lines should follow this pattern: <module-name>, <module-name>, … etc
+#   * Modules that doesn't exist will not be imported or cause a crash.
+# IMPORTANT! The urllib.*-modules can not be imported separately and should
+#     instead be imported as only urllib, once.
 
 
 # === IMPORTS === #
@@ -52,13 +71,13 @@ ALLITD              -> ALLITD
 {c}yo               -> * Pranz joined the channel[\n]<Pranz> Yo[\n]<calle> micraft server[\n]<Pranz> Vad ligger den på?[\n][lång tystnad]
 {c}hybrid           -> <psi-omega> i want it in mah hybrid car bitch!
 
-# === SMÅPLOCK === #
+# === MISC === #
 echo {arg}          -> {arg}
 {myname}!           -> wuh?
 {c}title            -> nej
 {c}ping             -> pong
 
-# === KOMMANDON === # 
+# === COMMANDS === # 
 {c}choose {arg}     -> #py: random.choice(arg.split('|')).strip()
 {c}tyda {arg}       -> {sender}: http://tyda.se/search/{qarg}
 {c}hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
@@ -68,7 +87,7 @@ echo {arg}          -> {arg}
 {c}list plugins     -> {sender}: https://github.com/kqr/memery/tree/master/plugins
 
 
-# === HJÄLPTEXTER === #
+# === HELP TEXTS === #
 {c}choose ?> <arg1> | <arg2> | … ?> Svarar med ett av slumpen valt argument.
 echo      ?> <text>              ?> Låt {myname} skriva ut texten.
 {c}title  ?>                     ?> nej
