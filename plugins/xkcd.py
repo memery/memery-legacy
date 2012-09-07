@@ -14,7 +14,7 @@ def run(nick, args):
     url_re = re.compile(r'\s*(http://xkcd\.com/\d+/)\s*')
 
     if not args.strip():
-        return '{}: skriv ett nummer, sökord eller en url'.format(nick)
+        return xkcd_info('http://xkcd.com', nick)
     elif number_re.match(args):
         return xkcd_info('http://xkcd.com/{}/'.format(number_re.match(args).group(1)), nick)
     elif url_re.match(args):
