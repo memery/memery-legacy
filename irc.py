@@ -2,15 +2,15 @@ from imp import reload
 import os.path, re, socket, ssl, traceback
 import common, ircparser, interpretor
 from time import time, sleep
-import random, string
+import datetime, random, string
 
 
 def log(text, type='general'):
     try:
         common.log(text, type)
     except:
-        # TODO: Gör backuploggning mer felsäker för konstiga terminaler 
-        print(repr('[BACKUP][{}] {}'.format(type.upper(), text)))
+        ts = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print('{} [BACKUP][{}] {}'.format(ts, type.upper(), text).encode(errors='replace'))
 
 def log_error(text):
     log(text, type='error')
