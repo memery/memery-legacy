@@ -34,7 +34,7 @@ def log(text, file='general'):
     if file == 'error':
         safeprint(log_message)
     
-    with open('log/{}.log'.format(file), 'a') as f:
+    with open('log/{}.log'.format(file), 'a', encoding='utf-8') as f:
         f.write(log_message + '\n')
 
 def error_info(desc, error):
