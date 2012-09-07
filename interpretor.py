@@ -174,7 +174,13 @@ def markov_talk(channel, myname, pickiness):
                 try: yield line.split('> ', 1)[1].split(words, 1)[1].split()[0]
                 except: continue
 
-    seed = random.choice(corpus).split('> ', 1)[1].split(' ')
+    # exception handling only an ugly temporary solution
+    # the real problem is that it chooses stuff from the whole
+    # corpus, when it should only choose privmsg lines.
+    for i in range(0,10):
+        try: seed = random.choice(corpus).split('> ', 1)[1].split(' ')
+        except IndexError: return None
+        else: break
     if seed[0][-1] in (':', ','):
         seed = seed[1:]
     sentence = seed[:pickiness]
