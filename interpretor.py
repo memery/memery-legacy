@@ -179,8 +179,11 @@ def markov_talk(channel, myname, pickiness):
     # corpus, when it should only choose privmsg lines.
     for i in range(0,10):
         try: seed = random.choice(corpus).split('> ', 1)[1].split(' ')
-        except IndexError: return None
+        except IndexError: continue
         else: break
+    else:
+        return None
+
     if seed[0][-1] in (':', ','):
         seed = seed[1:]
     sentence = seed[:pickiness]
