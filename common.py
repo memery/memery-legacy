@@ -81,6 +81,9 @@ def read_url(url, args='', quote_=True, content_whitelist=[]):
                          one of (empty list means no restriction)
     """
 
+    # Convert non-ascii chars to %xx-format
+    url = 'http://' + quote(url.lstrip('http://'))
+
     # Handy thing to append stuff to the url with a valid format
     if args:
         if quote_:
