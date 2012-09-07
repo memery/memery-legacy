@@ -180,6 +180,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
             # This should change the reference itself, not just this variable
             settings.clear()
             settings.update(newsettings)
+            send_privmsg(irc, channel, 'configen uppdaterad')
         return 'continue'
 
     elif cmd == 'reload':
