@@ -136,6 +136,30 @@ def get_channel(line, settings, state):
     return None
 
 
+def reload_modules(irc, channel, state):
+    """ 
+    Reload all relevant modules. 
+
+    Return false if there was an error, true otherwise. 
+    """
+    modules = (interpretor, ircparser, common)
+    reloaded = []
+    for m in modules:
+        try:
+            reload(m)
+        except Exception as e:
+            send_error(irc, channel, state, m.__name__, e)
+        else:
+            reloaded.append(m.__name__)
+    send_privmsg(irc, channel, 'reloaded: {}'.format(', '.join(reloaded)))
+
+    # Was there any errors?
+    if len(reloaded) != len(modules):
+        return False
+    else:
+        return True
+
+
 # ==== Parsing functions ====
 
 def exec_admin_cmd(irc, line, channel, settings, state):
@@ -152,8 +176,20 @@ def exec_admin_cmd(irc, line, channel, settings, state):
     # Ignore the namenudge
     cmd = rawcmd.group(1)
 
-    if cmd in ('quit', 'reconnect', 'restart'):
+    if cmd in ('quit', 'reconnect'):
         return cmd
+
+    elif cmd == 'restart':
+        reload_ok = reload_modules(irc, channel, state)
+        if not reload_ok:
+            send_privmsg(irc, channel, 'reload gav error, använd "force restart" om du vill starta om ändå!')
+            return 'continue'
+        else:
+            return cmd
+
+    elif cmd == 'force restart':
+        reload_modules(irc, channel, state)
+        return 'restart'
 
     elif cmd in ('hjälp', 'help', 'commands', 'admin'):
         send_privmsg(irc, channel, 'adminkommandon: quit, reload (inte irc.py), reconnect (onödigt), restart (allt), update config, stfu, test')
@@ -184,15 +220,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
         return 'continue'
 
     elif cmd == 'reload':
-        reloaded = []
-        for m in (interpretor, ircparser, common):
-            try:
-                reload(m)
-            except Exception as e:
-                send_error(irc, chunks[2], state, m.__name__, e)
-            else:
-                reloaded.append(m.__name__)
-        send_privmsg(irc, channel, 'reloaded: {}'.format(', '.join(reloaded)))
+        reload_modules(irc, channel, state)
         return 'continue'
 
     elif cmd == 'stfu':
