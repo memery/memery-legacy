@@ -163,16 +163,16 @@ def markov_talk(channel, myname, pickiness):
         raise ValueError('Error i configen. Ogiltigt värde för markov_pickiness! (Ska vara heltal större än 0.)')
 
     try:
-        with open('log/{}.log'.format(channel), 'r') as f:
+        with open('log/{}.log'.format(channel), 'r', encoding='utf-8') as f:
             corpus = f.readlines()
-    except:
+    except IOError:
         return None
 
     def nextwords(corpus, words, myname):
         for line in corpus:
             if words + ' ' in line and '> ' in line and myname not in line:
                 try: yield line.split('> ', 1)[1].split(words, 1)[1].split()[0]
-                except: continue
+                except IndexError: continue
 
     # exception handling only an ugly temporary solution
     # the real problem is that it chooses stuff from the whole
