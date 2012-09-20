@@ -245,7 +245,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
 # ==== Entry point ====
 
-def run(message, settings, memerystartuptime) # message is unused for now
+def run(message, settings, memerystartuptime): # message is unused for now
     try:
         settings = common.read_config('config')
     except Exception as e:
