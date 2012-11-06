@@ -70,6 +70,7 @@ ALLITD              -> ALLITD
 {c}mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
 {c}yo               -> * Pranz joined the channel[\n]<Pranz> Yo[\n]<calle> micraft server[\n]<Pranz> Vad ligger den på?[\n][lång tystnad]
 {c}hybrid           -> <psi-omega> i want it in mah hybrid car bitch!
+{c}regex(es)?       -> http://i.solidfiles.net/c66.jpg
 
 # === MISC === #
 echo {arg}          -> {arg}
