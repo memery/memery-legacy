@@ -20,7 +20,7 @@
 #   * no regex parsing
 #   * {arg} is replaced with what {arg} stood for in the left side
 #   * {qarg} is a shorthand for quote(arg), handy for urls
-#   > can execupe real python code if the text starts with '#py:':
+#   > can execute real python code if the text starts with '#py:':
 #       * everything after '#py:' is run through eval()
 #       * all modules that have been imported in THIS FILE (commands) can be used
 #       * that means, any and all modules that are to be used must be imported here!
