@@ -93,7 +93,7 @@ def send_error(irc, channel, state, desc, error):
     elif state['error_latest'] != ircmsg:
         state['error_latest'] = ircmsg
         state['error_repetitions'] = state['error_printcap']
-        autostfu = False        
+        autostfu = False
 
     log_error('[ERROR] {}'.format(ircmsg))
     if irc and channel and not autostfu:
@@ -120,7 +120,7 @@ def is_admin(sender):
 
 def get_channel(line, settings, state):
     chunks = line.split()
-    try:        
+    try:
         if chunks[1] in ('KICK', 'TOPIC', 'JOIN', 'MODE', 'PART'):
             return chunks[2][1:] if chunks[2][0] == ':' else chunks[2]
         elif chunks[1] == 'PRIVMSG':
@@ -137,10 +137,10 @@ def get_channel(line, settings, state):
 
 
 def reload_modules(irc, channel, state):
-    """ 
-    Reload all relevant modules. 
+    """
+    Reload all relevant modules.
 
-    Return false if there was an error, true otherwise. 
+    Return false if there was an error, true otherwise.
     """
     modules = (interpretor, ircparser, common)
     reloaded = []
@@ -245,7 +245,7 @@ def exec_admin_cmd(irc, line, channel, settings, state):
 
 # ==== Entry point ====
 
-def run(message, settings, memerystartuptime): # message is unused for now
+def ircloop(message, settings, memerystartuptime): # message is unused for now
     try:
         settings = common.read_config('config')
     except Exception as e:
@@ -253,9 +253,9 @@ def run(message, settings, memerystartuptime): # message is unused for now
         # TODO: this
         pass
 
-    state = {'quiet': False, 
-             'error_latest': '', 
-             'error_repetitions': 0, 
+    state = {'quiet': False,
+             'error_latest': '',
+             'error_repetitions': 0,
              'error_printcap': 2,
              'joined_channels': set(),
              'lastmsg': time(),
@@ -328,7 +328,7 @@ def run(message, settings, memerystartuptime): # message is unused for now
             else: raise
         else:
             readbuffer += readdata
-        
+
         stack = readbuffer.split(b'\r\n')
         readbuffer = stack.pop()
         for byteline in stack:
@@ -375,7 +375,7 @@ def run(message, settings, memerystartuptime): # message is unused for now
                 log_error('[irc.py/state keeping] The channel {} does not exist!'.format(channel))
                 settings['irc']['channels'].discard(channel)
                 continue
-            
+
             elif line.split()[1] == '433':
                 log_error('[irc.py/state keeping] Nick {} already in use, trying another one.'.format(state['nick']))
                 state['nick'] = new_nick(settings['irc']['nick'])
@@ -420,4 +420,19 @@ def run(message, settings, memerystartuptime): # message is unused for now
                 send(irc, 'JOIN {}'.format(','.join(joins)))
             if parts:
                 send(irc, 'PART {}'.format(','.join(parts)))
-            
+
+
+def run(message, settings, memerystartuptime): # message is unused for now
+    while True:
+        try:
+            ircloop(message, settings, memerystartuptime)
+        except (BrokenPipeError, ConnectionResetError):
+            log_error("Uppkopplingen återställd eller trasigt rör, startar om om {} sekunder...".format(settings['irc']['reconnect_delay']))
+            sleep(settings['irc']['reconnect_delay'])
+            log_error("Startar om...")
+            continue
+        except (ConnectionAbortedError, ConnectionRefusedError):
+            log_error("Uppkopplingen nekades av servern! Avslutas...")
+            break
+
+
