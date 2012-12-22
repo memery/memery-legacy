@@ -60,7 +60,7 @@ class In_Quit:
     def from_raw(self, line):
         sender, msgtype, rest = line[1:].split(' ', 2)
         self.sender, self.senderident = sender.split('!', 1)
-        self.channel, self.message = rest.split(' :', 1)
+        self.channel, self.message = ("irc", rest[1:])
         return self
 
     def log(self):
@@ -157,7 +157,7 @@ def parse(raw_line, state, settings):
     #    Exceptions are okay at this stage, irc.py will catch
     #    them and log the line properly anyway!
     indata.log()
-    
+
     # 3. Parse the data to a response
     if not state['quiet']:
         response = interpretor.main_parse(indata, state['nick'], settings)
