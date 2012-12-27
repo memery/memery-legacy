@@ -54,7 +54,8 @@ def pp_info(url, nick):
         (<p><a\ href="(?P<hdimg>.+?)">\[HD\ Version\]</a>)?
         """, re.DOTALL | re.VERBOSE)
 
-    transcript_re = re.compile(r'text: (“(?P<title1>.+?)”|‘(?P<title2>.+?)’)?(, )?(?P<transcript>.+)', re.DOTALL)
+    transcript_re = re.compile(r'text\s?:? (“(?P<title1>.+?)”|‘(?P<title2>.+?)’)?([,;] )?(?P<transcript>.+)', 
+                               re.DOTALL)
     
     result = main_re.search(data)
     if not result:
@@ -88,4 +89,5 @@ def sanitize(text):
     tags = '|'.join(('strong', 'em'))
     text = re.sub('</?({})>'.format(tags), '', text)
     text = text.replace('<sup>TM</sup>', '™')
+    text = re.sub(r'<a href=".+?">(.+?)</a>', r'\1', text)
     return text
