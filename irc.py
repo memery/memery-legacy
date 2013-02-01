@@ -434,5 +434,10 @@ def run(message, settings, memerystartuptime): # message is unused for now
         except (ConnectionAbortedError, ConnectionRefusedError):
             log_error("Uppkopplingen nekades av servern! Avslutas...")
             break
+        except socket.timeout:
+            low_error("Timeout! Startar om om {} sekunder...".format(settings['irc']['reconnect_delay']))
+            sleep(settings['irc']['reconnect_delay'])
+            log_error("Startar om...")
+            continue
 
 
