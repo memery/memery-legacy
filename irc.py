@@ -426,8 +426,13 @@ def run(message, settings, memerystartuptime): # message is unused for now
     while True:
         try:
             ircloop(message, settings, memerystartuptime)
-        except (BrokenPipeError, ConnectionResetError):
-            log_error("Uppkopplingen återställd eller trasigt rör, startar om om {} sekunder...".format(settings['irc']['reconnect_delay']))
+        except BrokenPipeError:
+            log_error("Trasigt rör, startar om om {} sekunder...".format(settings['irc']['reconnect_delay']))
+            sleep(settings['irc']['reconnect_delay'])
+            log_error("Startar om...")
+            continue
+        except ConnectionResetError:
+            log_error("Uppkopplingen återställd, startar om om {} sekunder...".format(settings['irc']['reconnect_delay']))
             sleep(settings['irc']['reconnect_delay'])
             log_error("Startar om...")
             continue
