@@ -257,7 +257,7 @@ def main_parse(data, myname, settings):
         titles = []
         for url in url_re.findall(msg):
             title = common.get_title(url)
-            if title and not titles.count(title):
+            if title and title not in titles:
                titles.append(title)
         return ircparser.Out_Messages(myname, channel, titles)
 
@@ -266,7 +266,7 @@ def main_parse(data, myname, settings):
         titles = []
         for m in spotify_url_re.findall(msg):
             title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
-            if title and not titles.count(title):
+            if title and title not in titles:
                 titles.append(re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title))
         return ircparser.Out_Messages(myname, channel, titles)
 
