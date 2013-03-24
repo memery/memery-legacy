@@ -254,23 +254,21 @@ def main_parse(data, myname, settings):
 
     # Title
     elif url_re.search(msg):
-        out = []
-        titles = set()
-        for url in set(url_re.findall(msg)):
+        titles = []
+        for url in url_re.findall(msg):
             title = common.get_title(url)
-            if title:
-                titles.add(title)
-        return ircparser.Out_Messages(myname, channel, list(titles))
+            if title and title not in titles:
+               titles.append(title)
+        return ircparser.Out_Messages(myname, channel, titles)
 
     # spotify title
     elif spotify_url_re.search(msg):
-        out = []
-        titles = set()
-        for m in set(spotify_url_re.findall(msg)):
+        titles = []
+        for m in spotify_url_re.findall(msg):
             title = common.get_title('http://open.spotify.com' + m.replace(':', '/'))
-            if title:
-                titles.add(re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title))
-        return ircparser.Out_Messages(myname, channel, list(titles))
+            if title and title not in titles:
+                titles.append(re.sub(r'(.+?) by (.+?) on Spotify', r'Spotify: \1 (\2)', title))
+        return ircparser.Out_Messages(myname, channel, titles)
 
     # Rest of the commands
     else:
