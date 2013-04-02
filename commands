@@ -66,7 +66,7 @@ ALLITD              -> ALLITD
 {c}lose             -> The Game.
 {c}lök              -> <Goebbels> Nu ska jag handla LÖK.
 {c}lök {arg}        -> <Goebbels> Nu ska {arg} handla LÖK.
-(^|.*?\W)LÖ+K(\W.*?|$) -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
+.*?LÖ+K.*?          -> #py: 'L' + 'Ö'*random.randint(2,8) + 'K'
 {c}mr_basic         -> <kobran> abobaloba baloba[\n]<kobran> he'sa mr_basic[\n]<kobran> mr fantastic
 {c}yo               -> * Pranz joined the channel[\n]<Pranz> Yo[\n]<calle> micraft server[\n]<Pranz> Vad ligger den på?[\n][lång tystnad]
 {c}hybrid           -> <psi-omega> i want it in mah hybrid car bitch!
