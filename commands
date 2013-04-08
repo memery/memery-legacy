@@ -71,6 +71,7 @@ ALLITD              -> ALLITD
 {c}yo               -> * Pranz joined the channel[\n]<Pranz> Yo[\n]<calle> micraft server[\n]<Pranz> Vad ligger den på?[\n][lång tystnad]
 {c}hybrid           -> <psi-omega> i want it in mah hybrid car bitch!
 {c}regex(es)?       -> http://i.solidfiles.net/c66.jpg
+{c}syntax           -> jag tror jag skriver ned det i syntaxtabellen
 
 # === MISC === #
 echo {arg}          -> {arg}
