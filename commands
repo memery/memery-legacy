@@ -72,7 +72,9 @@ ALLITD              -> ALLITD
 {c}hybrid           -> <psi-omega> i want it in mah hybrid car bitch!
 {c}regex(es)?       -> http://i.solidfiles.net/c66.jpg
 {c}ok               -> jag tror jag skriver ned det i syntaxtabellen
+{c}ok {arg}         -> {arg}: jag tror jag skriver ned det i syntaxtabellen
 {c}welcome          -> <nycz> welcome to the real world jackass
+{c}welcome {arg}    -> {arg}: welcome to the real world jackass
 
 # === MISC === #
 echo {arg}          -> {arg}
