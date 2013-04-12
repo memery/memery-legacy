@@ -88,8 +88,8 @@ echo {arg}          -> {arg}
 {c}hitta {arg}      -> {sender}: www.hitta.se/LargeMap.aspx?var={qarg}
 {c}vecka            -> #py: '{0}: Vecka {1}'.format(sender, datetime.date.today().isocalendar()[1])
 {c}jdn              -> #py: '{0}: Nuvarande julian day: {1:.5f}'.format(sender, calendar.timegm(datetime.datetime.utcnow().utctimetuple())/86400.0 + 2440587.5)
-{c}list commands    -> {sender}: https://github.com//memery/memery-legacy/blob/master/commands
-{c}list plugins     -> {sender}: https://github.com//memery/memery-legacy/tree/master/plugins
+{c}list commands    -> {sender}: https://github.com/memery/memery-legacy/blob/master/commands
+{c}list plugins     -> {sender}: https://github.com/memery/memery-legacy/tree/master/plugins
 
 
 # === HELP TEXTS === #
