@@ -17,7 +17,7 @@ def search(args):
 
     if hits:
         striphtml = lambda s: re.sub(r'<.+?>', '', re.sub(r'  +', '', s))
-        url = striphtml(hits[0]['url'])
+        url = striphtml(hits[0]['unescapedUrl'])
         title = striphtml(hits[0]['title'])
         content = striphtml(hits[0]['content'])
         result = "{1}: {2} -- {0}".format(url, title, content)
