@@ -10,9 +10,14 @@
   },
 
   "behaviour": {
-    "command_prefix": "@",
-    "markov_frequency": 10,
-    "markov_pickiness": 2
+    "command_prefix": "@"
+  },
+
+  "markov": {
+     "executable": "./markov",
+     "quantity": 100,
+     "pickiness": 2,
+     "frequency": 10
   },
 
   "plugins": {

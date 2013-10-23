@@ -1,21 +1,23 @@
+import subprocess
+
 # `run_cmarkov` gathers some randomly generated sentences and
 # returns them in a list.
-def run_cmarkov(settings, pickiness, corpus):
+def run_cmarkov(settings, corpus):
     try:
-        output = subprocess.check_output([settings['markov']['executable'], str(settings['markov']['pickiness'])])
-    except CalledProcessError:
-        print('Error: cmarkov kunde inte köras')
+        output = subprocess.check_output([settings['markov']['executable'],
+                                          str(settings['markov']['quantity']),
+                                          str(settings['markov']['pickiness']),
+                                          corpus])
+    except subprocess.CalledProcessError:
         return None
 
-    return output.split('\n')
-
+    return output.decode('UTF-8').split('\n')
 
 def markov(myname, sentences):
-    qualified = filter(lambda x: myname not in x, sentences)
+    qualified = list(filter(lambda x: myname not in x, sentences))
     if qualified:
-        choice = qualifieds[0]
+        choice = qualified[0]
         sentences.remove(choice)
         return choice, sentences
     else:
-        raise ValueError('Det finns ingen mening som inte innehåller `myname`')
-
+        raise ValueError('Finns inga kvalificerade meningar')

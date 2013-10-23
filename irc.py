@@ -261,7 +261,8 @@ def ircloop(message, settings, memerystartuptime): # message is unused for now
              'lastmsg': time(),
              'pinged': False,
              'nick': settings['irc']['nick'],
-             'anti-flood': {}}
+             'anti-flood': {},
+             'markov_sentences': dict() }
 
     def reset_errorstack():
         state['error_repetitions'] = 0
@@ -364,10 +365,13 @@ def ircloop(message, settings, memerystartuptime): # message is unused for now
             if line.startswith(':{}!'.format(state['nick'])):
                 if line.split()[1] == 'JOIN':
                     state['joined_channels'].add(channel)
+                    state['markov_sentences'].update({channel: []})
                 elif line.split()[1] == 'PART':
                     state['joined_channels'].discard(channel)
+                    state['markov_sentences'].pop(channel, None)
                 elif line.split()[1] == 'KICK':
                     state['joined_channels'].discard(channel)
+                    state['markov_sentences'].pop(channel, None)
                     log('[irc.py/state keeping] Kicked from channel {}.'.format(channel))
                     settings['irc']['channels'].discard(channel)
 
