@@ -199,12 +199,11 @@ def main_parse(data, state, myname, settings):
     elif re.match('{}.? '.format(myname), msg):
         if random.randint(1, 2) == 1:
             sentence, state['markov_sentences'][channel] = markov.markov(myname, state['markov_sentences'][channel])
-            ret = ircparser.Out_Messages(myname, channel, sentence)
 
             if not state['markov_sentences'][channel]:
                 state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
 
-            return ret
+            return ircparser.Out_Messages(myname, channel, sentence)
 
     # .help
     elif startswith_cp(msg, 'help'):
@@ -246,12 +245,11 @@ def main_parse(data, state, myname, settings):
                random.randint(1, settings['markov']['frequency']) == 1:
                 try:
                     sentence, state['markov_sentences'][channel] = markov.markov(myname, state['markov_sentences'][channel])
-                    ret = ircparser.Out_Messages(myname, channel, sentence)
 
                     if not state['markov_sentences'][channel]:
                         state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
 
-                    return ret
+                    return ircparser.Out_Messages(myname, channel, sentence)
                 except ValueError:
                     return None
 

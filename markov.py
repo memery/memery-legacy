@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, common
 
 # `run_cmarkov` gathers some randomly generated sentences and
 # returns them in a list.
@@ -9,6 +9,7 @@ def run_cmarkov(settings, corpus):
                                           str(settings['markov']['pickiness']),
                                           corpus])
     except subprocess.CalledProcessError:
+        log('Gick inte att köra markov', file='error')
         return None
 
     return output.decode('UTF-8').split('\n')

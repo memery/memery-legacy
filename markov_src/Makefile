@@ -1,6 +1,5 @@
 CC    := gcc
 RM    := rm
-STRIP := strip
 
 ifeq ($(DEBUG), true)
 	DEBUG_FLAGS := -g

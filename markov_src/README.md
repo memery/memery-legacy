@@ -1,7 +1,7 @@
 markov
 ======
 
-This program generates sentences using markov chains. It has plenty of
+This program generates sentences using markov chains-style random generation. It has plenty of
 explainations in the code.
 
 ## Usage
