@@ -160,7 +160,7 @@ def parse(raw_line, state, settings):
 
     # 3. Parse the data to a response
     if not state['quiet']:
-        response = interpretor.main_parse(indata, state['nick'], settings)
+        response = interpretor.main_parse(indata, state, state['nick'], settings)
         if not response:
             return None
 
