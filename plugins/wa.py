@@ -13,7 +13,10 @@ def run(nick, args):
 
 
 def query(args):
-    appid   = 'RVJQW9-Y24PQVWT86'
+    try:
+        appid = common.read_lineconf(common.read_file('wolframalpha-api-key'))[0]
+    except (IOError, IndexError):
+        raise IOError('No appid to WolframAlpha™ was found.')
 
     m = re.search(r'^(.*?)( \| (.*?))?$', args)
 
