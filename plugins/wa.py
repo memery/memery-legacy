@@ -20,14 +20,12 @@ def query(args):
     expr = m.group(1)
     xml = common.read_url('http://api.wolframalpha.com/v2/query?appid={0}&input='.format(appid), expr)
 
-    output_type = m.group(3)
-    if output_type == None:
-        output_type = 'approx'
+    output_type = 'approx' if not m.group(3) else m.group(3)
 
     root = ET.fromstring(xml)
 
     didyoumeans = root.find('didyoumeans')
-    if didyoumeans != None:
+    if didyoumeans:
         return 'Did you mean: \'{0}\'?'.format(didyoumeans.find('didyoumean').text)
 
     title = {'approx': 'Decimal approximation',
