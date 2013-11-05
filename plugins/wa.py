@@ -13,12 +13,12 @@ def run(nick, args):
 
 
 def query(args):
-    appid   = 'RVJQW9-V6T8T3WY33'
+    appid   = 'RVJQW9-Y24PQVWT86'
 
     m = re.search(r'^(.*?)( \| (.*?))?$', args)
 
-    input = m.group(1)
-    xml = common.read_url('http://api.wolframalpha.com/v2/query?appid={0}&input='.format(appid), input)
+    expr = m.group(1)
+    xml = common.read_url('http://api.wolframalpha.com/v2/query?appid={0}&input='.format(appid), expr)
 
     output_type = m.group(3)
     if output_type == None:
