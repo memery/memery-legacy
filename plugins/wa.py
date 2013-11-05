@@ -36,7 +36,7 @@ def query(args):
 
     for pod in root:
         if pod.tag == 'pod':
-            if pod.attrib['title'] == 'Result' or pod.attrib['title'] == title[output_type]:
+            if pod.attrib['title'] == 'Result' or pod.attrib['title'] == 'Value' or pod.attrib['title'] == title[output_type]:
                 return pod.find('subpod').find('plaintext').text
 
     return 'WolframAlpha™ doesn\'t have the answer.'
