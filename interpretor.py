@@ -203,7 +203,7 @@ def main_parse(data, state, myname, settings):
             if not state['markov_sentences'][channel]:
                 state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
 
-            return ircparser.Out_Messages(myname, channel, sentence)
+            return ircparser.Out_Messages(myname, channel, '{}: {}'.format(sendernick, sentence))
 
     # .help
     elif startswith_cp(msg, 'help'):

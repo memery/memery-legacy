@@ -1,4 +1,5 @@
 import subprocess, common
+from re import sub
 
 # `run_cmarkov` gathers some randomly generated sentences and
 # returns them in a list.
@@ -15,10 +16,12 @@ def run_cmarkov(settings, corpus):
     return output.decode('UTF-8').split('\n')
 
 def markov(myname, sentences):
-    qualified = list(filter(lambda x: myname not in x, sentences))
-    if qualified:
-        choice = qualified[0]
-        sentences.remove(choice)
-        return choice, sentences
-    else:
+    # Strip out any accidental nudges and don't use lines directed to me
+    qualified = [sub(r'^[^ ]+[:,] ', '', s) for s in sentences if myname not in s]
+
+    try:
+        choice = sentences.pop(0)
+    except IndexError:
         raise ValueError('Finns inga kvalificerade meningar')
+
+    return choice, sentences
