@@ -1,4 +1,3 @@
-
 import common
 import re
 
@@ -16,7 +15,7 @@ def search(args):
     hits = common.read_json(common.read_url("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&safe=off&q=", args))['responseData']['results']
 
     if hits:
-        striphtml = lambda s: re.sub(r'<.+?>', '', re.sub(r'  +', '', re.sub(r'\n', '', s)))
+        striphtml = lambda s: re.sub(r'<.+?>', '', re.sub(r'(  +|\n)', '', s))
         url = striphtml(hits[0]['unescapedUrl'])
         title = striphtml(hits[0]['titleNoFormatting'])
         content = striphtml(hits[0]['content'])
