@@ -20,7 +20,7 @@ def markov(myname, sentences):
     qualified = [sub(r'^[^ ]+[:,] ', '', s) for s in sentences if myname not in s]
 
     try:
-        choice = sentences.pop(0)
+        choice = qualified.pop(0)
     except IndexError:
         raise ValueError('Finns inga kvalificerade meningar')
 
