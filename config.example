@@ -21,7 +21,7 @@
   },
 
   "plugins": {
-    "blacklist": ["c", "lastfm"]
+    "blacklist": ["wa", "lastfm"]
   }
 }
 
