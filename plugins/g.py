@@ -3,9 +3,9 @@ import common
 import re
 
 def help():
-    return {'authors':     ['kqr'],
-            'years':       ['2012'],
-            'version':     '1.2',
+    return {'authors':     ['kqr', 'jocke-l'],
+            'years':       ['2012', '2013'],
+            'version':     '1.3',
             'description': 'Interface till Google via något slags ajax json API.',
             'argument':    '<googlesökning>'}
 
