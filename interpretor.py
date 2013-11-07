@@ -181,7 +181,10 @@ def main_parse(data, state, myname, settings):
     is_admin = common.is_admin(sendernick, senderident)
 
     if not state['markov_sentences'][channel]:
-        state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
+        try:
+            state['markov_sentences'][channel] = markov.run_cmarkov(myname, settings, 'log/{}.log'.format(channel))
+        except ValueError as e:
+            common.log(str(e), 'error')
 
     if common.is_blacklisted(sendernick, senderident):
         return None
@@ -198,12 +201,11 @@ def main_parse(data, state, myname, settings):
     # memery:
     elif re.match('{}.? '.format(myname), msg):
         if random.randint(1, 2) == 1:
-            sentence, state['markov_sentences'][channel] = markov.markov(myname, state['markov_sentences'][channel])
-
-            if not state['markov_sentences'][channel]:
-                state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
-
-            return ircparser.Out_Messages(myname, channel, '{}: {}'.format(sendernick, sentence))
+            try:
+                sentence = state['markov_sentences'][channel].pop(0)
+                return ircparser.Out_Messages(myname, channel, '{}: {}'.format(sendernick, sentence))
+            except IndexError:
+                pass
 
     # .help
     elif startswith_cp(msg, 'help'):
@@ -238,18 +240,14 @@ def main_parse(data, state, myname, settings):
     else:
         output = get_output(msg, myname, sendernick, channel, command_prefix)
         if output:
-        # markov chain-style talking
             return ircparser.Out_Messages(myname, channel, output)
+        # markov chain-style talking
         else:
             if settings['markov']['frequency'] > 0 and \
                random.randint(1, settings['markov']['frequency']) == 1:
                 try:
-                    sentence, state['markov_sentences'][channel] = markov.markov(myname, state['markov_sentences'][channel])
-
-                    if not state['markov_sentences'][channel]:
-                        state['markov_sentences'][channel] = markov.run_cmarkov(settings, 'log/{}.log'.format(channel))
-
+                    sentence = state['markov_sentences'][channel].pop(0)
                     return ircparser.Out_Messages(myname, channel, sentence)
-                except ValueError:
-                    return None
+                except IndexError:
+                    pass
 
