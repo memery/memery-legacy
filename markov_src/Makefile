@@ -7,7 +7,7 @@ else
 	OPTIMISATION_LEVEL := -O2
 endif
 
-CFLAGS := -Wall -Wextra -pedantic -std=c11 $(DEBUG_FLAGS) $(OPTIMISATION_LEVEL)
+CFLAGS := -Wall -Wextra -pedantic -std=c99 $(DEBUG_FLAGS) $(OPTIMISATION_LEVEL)
 
 LIBS := -lrt
 
