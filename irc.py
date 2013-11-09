@@ -1,6 +1,6 @@
 from imp import reload
 import os.path, re, socket, ssl, traceback
-import common, ircparser, interpretor
+import common, ircparser, interpretor, markov
 from time import time, sleep
 import datetime, random, string
 
@@ -142,7 +142,7 @@ def reload_modules(irc, channel, state):
 
     Return false if there was an error, true otherwise.
     """
-    modules = (interpretor, ircparser, common)
+    modules = (interpretor, ircparser, common, markov)
     reloaded = []
     for m in modules:
         try:
