@@ -5,11 +5,12 @@ This program generates sentences using markov chains-style random generation. It
 explainations in the code.
 
 ## Usage
+
     ./markov [benchmark] <quantity> <pickiness> <corpusfile>
 
 ## Licensing
 
-All code (except uthash and/or any separate copyright notices) is licensed under the terms of the 3-clause BSD-License:
+All code is licensed under the terms of the 3-clause BSD-License:
 
     Copyright (c) 2013, jocke-l
     All rights reserved.

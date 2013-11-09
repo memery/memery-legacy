@@ -1,22 +1,14 @@
-CC    := gcc
-RM    := rm
+CC := gcc
+CFLAGS := -Wall -Wextra -pedantic -std=c99 -O3
 
-ifeq ($(DEBUG), true)
-	DEBUG_FLAGS := -g
-else
-	OPTIMISATION_LEVEL := -O2
-endif
-
-CFLAGS := -Wall -Wextra -pedantic -std=c99 $(DEBUG_FLAGS) $(OPTIMISATION_LEVEL)
-
-LIBS := -lrt
+BIN := markov
 
 .PHONY: all clean
 
-all: markov
+all: $(BIN)
 
 clean:
-	$(RM) markov
+	rm -rf $(BIN)
 
-markov: markov.c Makefile
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+$(BIN): markov.c
+	$(CC) $(CFLAGS) -o $(BIN) markov.c -lrt
