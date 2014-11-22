@@ -16,14 +16,10 @@ def m2h(m):
         return ('{} {}'.format(amount, unit + ('s' if amount > 1 else ''))
                 if amount else '')
 
-    def either(a, b):
-        return a if a else b
-
     if not isinstance(m, int):
         m = int(m)
 
     hours, minutes = m // 60, m % 60
 
-    return either(' and '.join(filter(bool, (pluralise(hours, 'hour'),
-                                             pluralise(minutes, 'minute')))),
-                  '^')
+    return (' and '.join(filter(bool, (pluralise(hours, 'hour'),
+                                      pluralise(minutes, 'minute'))))) or '^'
