@@ -1,15 +1,15 @@
 def help():
     return {'authors': ['jocke-l'],
             'years': ['2014'],
-            'version': '1.1',
+            'version': '1.2',
             'description': 'Minutes-to-hours converter',
             'argument': '<minutes>'}
 
 def run(nick, args):
     try:
-        return '{}: {}'.format(nick, m2h(args[0]))
-    except IndexError:
-        return '{}: too few arguments'
+        return '{}: {}'.format(nick, m2h(args))
+    except ValueError:
+        return '{}: invalid argument'.format(nick)
 
 def m2h(m):
     def pluralise(amount, unit):
