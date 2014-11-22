@@ -21,5 +21,5 @@ def m2h(m):
 
     hours, minutes = divmod(m, 60)
 
-    return (' and '.join(filter(bool, (pluralise(hours, 'hour'),
-                                       pluralise(minutes, 'minute'))))) or '^'
+    return ' and '.join(filter(bool, (pluralise(hours, 'hour'),
+                                      pluralise(minutes, 'minute')))) or '^'
