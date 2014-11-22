@@ -4,7 +4,7 @@ from decimal import Decimal
 def help():
     return {'authors': ['jocke-l'],
             'years': ['2014'],
-            'version': '1.0',
+            'version': '1.1',
             'description': 'Minutes-to-hours converter',
             'argument': '<minutes>'}
 
@@ -25,9 +25,8 @@ def m2h(m):
     if not isinstance(m, Decimal):
         m = Decimal(m)
 
-    h = floor(m / 60)
-    m = floor((m / 60 - h) * 60)
+    hours, minutes = m // 60, m % 60
 
-    return either(' and '.join(filter(bool, (pluralise(h, 'hour'),
-                                             pluralise(m, 'minute')))),
+    return either(' and '.join(filter(bool, (pluralise(hours, 'hour'),
+                                             pluralise(minutes, 'minute')))),
                   '^')
