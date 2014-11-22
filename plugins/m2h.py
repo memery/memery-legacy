@@ -19,7 +19,7 @@ def m2h(m):
     if not isinstance(m, int):
         m = int(m)
 
-    hours, minutes = m // 60, m % 60
+    hours, minutes = divmod(m, 60)
 
     return (' and '.join(filter(bool, (pluralise(hours, 'hour'),
                                       pluralise(minutes, 'minute'))))) or '^'
