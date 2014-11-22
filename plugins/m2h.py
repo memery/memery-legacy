@@ -1,6 +1,3 @@
-from math import floor
-from decimal import Decimal
-
 def help():
     return {'authors': ['jocke-l'],
             'years': ['2014'],
@@ -22,8 +19,8 @@ def m2h(m):
     def either(a, b):
         return a if a else b
 
-    if not isinstance(m, Decimal):
-        m = Decimal(m)
+    if not isinstance(m, int):
+        m = int(m)
 
     hours, minutes = m // 60, m % 60
 
